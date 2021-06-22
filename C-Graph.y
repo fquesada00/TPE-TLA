@@ -3,8 +3,8 @@
     #include <stdlib.h>
     #include <stdio.h>
     #include "C-Graph.h"
-    // #define YYDEBUG 1
-    // int yydebug = 1;
+    #define YYDEBUG 1
+    int yydebug = 1;
     void yyerror (char *s);
     int yylex();
     typedef struct symbol{
@@ -30,10 +30,10 @@
 %type <string> DEFINITION DECLARATION
 %%
 PROGRAM:        graph '(' ')' BLOCKCODE
-;
-BLOCKCODE:      '{' CODE '}'            
-;
-CODE:           ';'                     {puts("here");}
+                ;
+BLOCKCODE:      '{' CODE '}'          
+                ;
+CODE:           ';'
                 |
                 DECLARATION ';'
                 |

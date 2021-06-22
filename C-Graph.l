@@ -10,14 +10,14 @@
 digits [0-9]+
 alpha [a-zA-Z]{1,256}
 ignore [ \t\n]+
-entrypoint graph\(\)
+entrypoint graph
 %%
+[+-=;{}\(\)]              {return yytext[0];}
 int                       {yylval.type = INT; return identifier_type;}
 string                    {yylval.type = STRING; return identifier_type;}
-{entrypoint}              {printf("Starting program...\n");return graph;}
+{entrypoint}              {printf("Starting program....\n");return graph;}
 {alpha}                   {yylval.string = yytext; return identifier;}
 {digits}                  {yylval.integer = atoi(yytext);return number;}
-[+-=;{}]                  {return yytext[0];}
 {ignore}                  ;
 .                         ;
 %%
