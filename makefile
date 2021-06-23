@@ -1,5 +1,5 @@
 all:
-	yacc -d C-Graph.y
+	yacc -d C-Graph.y --debug --verbose
 	lex C-Graph.l
 	gcc -o CG lex.yy.c y.tab.c -lfl
 

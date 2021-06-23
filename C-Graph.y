@@ -3,8 +3,9 @@
     #include <stdlib.h>
     #include <stdio.h>
     #include "C-Graph.h"
+    #define MAX_IDENTIFIER_LENGTH 256
     #define YYDEBUG 1
-    int yydebug = 1;
+    // int yydebug = 1;
     void yyerror (char *s);
     int yylex();
     typedef struct symbol{
@@ -44,6 +45,8 @@ CODE:           ';'
                 CODE DEFINITION ';'
                 |
                 CODE ';'
+                |
+                                                {/* empty */}
 ;
 DECLARATION:    identifier_type identifier    {$$ = $2; create_symbol($1,$2);}
 ;
@@ -79,6 +82,7 @@ void create_symbol(data_type type, char * name) {
         default:
         break;
     }
+    symbol_count++;
 }
 
 int get_symbol_index(char *name) {
@@ -91,7 +95,7 @@ int get_symbol_index(char *name) {
 
 void update_symbol(char * name,void * value){
     int i = get_symbol_index(name);
-    if(i ==-1)
+    if(i ==-1) 
         exit(EXIT_FAILURE);
     switch(symbol_table[i].type){
         case INT:
@@ -118,6 +122,7 @@ int main (void) {
 	int i;
 	for(i=0; i<16; i++) {
 		memset(&symbol_table[i], 0, sizeof(symbol));
+        symbol_table->name = malloc(sizeof(char) * MAX_IDENTIFIER_LENGTH);
 	}
 
 	return yyparse ( );

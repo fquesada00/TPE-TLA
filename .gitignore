@@ -50,6 +50,9 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Yacc and Lexx files compile and executable results
 CG
 y.tab.*
 lex.yy.c
+y.output

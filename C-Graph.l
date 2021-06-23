@@ -12,12 +12,12 @@ alpha [a-zA-Z]{1,256}
 ignore [ \t\n]+
 entrypoint graph
 %%
-[+-=;{}\(\)]              {return yytext[0];}
-int                       {yylval.type = INT; return identifier_type;}
-string                    {yylval.type = STRING; return identifier_type;}
+[+=;{}\(\)-]              {puts("here1");return yytext[0];}
+int                       {puts("here2");yylval.type = INT; return identifier_type;}
+string                    {puts("here3");yylval.type = STRING; return identifier_type;}
 {entrypoint}              {printf("Starting program....\n");return graph;}
-{alpha}                   {yylval.string = yytext; return identifier;}
-{digits}                  {yylval.integer = atoi(yytext);return number;}
-{ignore}                  ;
-.                         ;
+{alpha}                   {puts("here4");yylval.string = yytext; return identifier;}
+{digits}                  {puts("here5");yylval.integer = atoi(yytext);return number;}
+{ignore}                  {puts("here6");}
+.                         {puts("here7");}
 %%
