@@ -51,6 +51,10 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+#vscode files
+.vscode/
+
+
 # Yacc and Lexx files compile and executable results
 CG
 y.tab.*
