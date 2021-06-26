@@ -43,6 +43,8 @@ typedef struct AstGraphNode {
 
 typedef struct AstIfNode {
     AstNodeType type;
+    struct AstBooleanExpressionNode * condition;
+    AstBlockcodeNode * blockcode;
 } AstIfNode;
 
 typedef enum {
@@ -84,6 +86,8 @@ AstBlockcodeNode * newAstBlockcodeNode(AstCodeNode * node);
 AstCodeNode *newAstCodeNode(AstNode *current, AstCodeNode *code);
 AstNodeList * newAstNodeList(AstNode * current,AstCodeNode * next);
 AstDeclarationNode * newAstDeclarationNode(AstDeclarationType data_type, AstNode * node, char * name);
+AstBooleanExpressionNode *newAstBooleanExpressionNode(AstBooleanExpressionNode *left, AstBooleanExpressionNode *right, char *op ,int value);
+AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode);
 AstArithmeticExpressionNode * newAstArithmeticExpressionNode(AstArithmeticExpressionNode * right, AstArithmeticExpressionNode * left, char * op, int value);
 AstConstantExpressionNode * newAstConstantExpressionNode(char * stringValue);
 void freeAstGraphNode(AstGraphNode * node);

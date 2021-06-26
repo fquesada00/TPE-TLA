@@ -12,9 +12,12 @@ ascii-printables [ -~]{1,256}
 ignore [ \t\n]+
 entrypoint graph
 %% 
-[=;{}\(\)]           {return yytext[0];}
+(==|!=|>=|<=|>|<|&&|\|\|) {yylval.string = strdup(yytext);return BINARY_BOOL_OPERATOR;}
+!                         {yylval.string = strdup(yytext);return UNARY_BOOL_OPERATOR;}
+[=;{}\(\)]                {return yytext[0];}
 [+\*/-]                   {yylval.string = strdup(yytext);return OPERATOR;}
 int                       {return INT;}
+if                        {return IF;}
 string                    {return STRING;}
 {entrypoint}              {return GRAPH;}
 \"{ascii-printables}\"    {yylval.string = strdup(yytext);return STRING_VALUE;}

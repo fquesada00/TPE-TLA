@@ -66,6 +66,14 @@ AstDeclarationNode *newAstDeclarationNode(AstDeclarationType data_type, AstNode 
     return declaration;
 }
 
+AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode){
+    AstIfNode * new = malloc(sizeof(AstIfNode));
+    new->type = IF_TYPE;
+    new->condition = condition;
+    new->blockcode = blockcode;
+    return new;
+}
+
 AstConstantExpressionNode *newAstConstantExpressionNode(char *stringValue)
 {
     AstConstantExpressionNode *constantExpression = malloc(sizeof(AstConstantExpressionNode));
@@ -86,7 +94,7 @@ AstBooleanExpressionNode *newAstBooleanExpressionNode(AstBooleanExpressionNode *
     else {
         int length = strlen(op);
         booleanExpression->op = malloc(sizeof(char) * (length + 1));
-        strncpy(booleanExpression,op,length);
+        strncpy(booleanExpression->op,op,length);
     }
     booleanExpression->left = left;
     booleanExpression->right = right;

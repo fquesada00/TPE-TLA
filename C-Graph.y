@@ -15,12 +15,15 @@
 %start program
 %union {struct AstNode * node;int num; char * string;}
 %token GRAPH
-%token <string> ID STRING_VALUE
+
+%token <string> ID STRING_VALUE IF
 %token <num> NUMBER
 %token INT STRING
 %token <string> OPERATOR 
-%left OPERATOR
-%type <node> blockcode code declaration exp
+%token <string> BINARY_BOOL_OPERATOR
+%token <string> UNARY_BOOL_OPERATOR
+%left OPERATOR BINARY_BOOL_OPERATOR UNARY_BOOL_OPERATOR
+%type <node> blockcode code declaration exp boolExp conditional
 %type <num> term
 %%
 program:        GRAPH '(' ')' blockcode     {entrypoint = newAstGraphNode((AstBlockcodeNode *)$4); return 1;}
@@ -30,6 +33,8 @@ blockcode:      '{' code '}'                {$$ = (AstNode *) newAstBlockcodeNod
 code:           ';'                         {$$ = (AstNode *) newAstCodeNode((AstNode *)NULL,(AstCodeNode *)NULL);}
                 |
                 code declaration ';'        {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                |
+                code conditional            {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                                             {$$ = NULL;}
 ;
@@ -47,8 +52,16 @@ exp:            term                        {$$ = (AstNode *) newAstArithmeticEx
 ;
 term:           NUMBER                      {$$ = $1;}			    
 ;
-
+conditional:    IF '(' boolExp ')' blockcode {$$ = (AstNode *) newAstIfNode((AstBooleanExpressionNode *)$3,(AstBlockcodeNode * )$5);}
+;
+boolExp:        term                              {$$ = (AstNode *) newAstBooleanExpressionNode(NULL,NULL,NULL,$1);}
+                |
+                boolExp BINARY_BOOL_OPERATOR boolExp {$$ = (AstNode *) newAstBooleanExpressionNode((AstBooleanExpressionNode *)$1,(AstBooleanExpressionNode *)$3,$2,0);free($2);}
+                |
+                UNARY_BOOL_OPERATOR boolExp       {$$ = (AstNode *) newAstBooleanExpressionNode(NULL,(AstBooleanExpressionNode *)$2,$1,0);free($1);}
+;
 %%
+
 
 int main (void) {
 	yyparse();

@@ -7,6 +7,7 @@ void translateAstBlockcodeNode(AstBlockcodeNode * node);
 void translateAstCodeNode(AstCodeNode * node);
 void translateAstNodeList(AstNodeList * node);
 void translateAstDeclarationNode(AstDeclarationNode * node);
+void translateAstBooleanExpressionNode(AstBooleanExpressionNode * node);
 void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node);
 void translateAstConstantNode(AstConstantExpressionNode * node);
 #endif
