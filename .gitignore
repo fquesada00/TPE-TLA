@@ -61,3 +61,6 @@ graph
 y.tab.*
 lex.yy.c
 y.output
+output.txt
+valgrind-out.txt
+input.cg
