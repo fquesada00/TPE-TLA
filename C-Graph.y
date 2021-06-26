@@ -38,7 +38,7 @@ declaration:    INT ID                      {$$ = (AstNode *) newAstDeclarationN
                 |
                 STRING ID                   {$$ = (AstNode *) newAstDeclarationNode(STRING_DECLARATION_TYPE,(AstArithmeticExpressionNode *)NULL,$2);free($2);}
                 |
-                STRING ID '=' STRING_VALUE  {$$ = (AstNode *) newAstDeclarationNode(STRING_DECLARATION_TYPE,(AstArithmeticExpressionNode *)newAstConstantExpressionNode($4),$2);free($2);}
+                STRING ID '=' STRING_VALUE  {$$ = (AstNode *) newAstDeclarationNode(STRING_DECLARATION_TYPE,(AstArithmeticExpressionNode *)newAstConstantExpressionNode($4),$2);free($2);free($4)}
 ;
 exp:            term                    {$$ = (AstNode *) newAstArithmeticExpressionNode((AstArithmeticExpressionNode *) NULL,(AstArithmeticExpressionNode *) NULL, (char *) NULL, $1);}
                 |
@@ -53,7 +53,6 @@ term:           NUMBER                  {$$ = $1;}
 
 int main (void) {
 	yyparse();
-    puts("here");
     translateAstGraphNode(entrypoint);
     return 1;
 }
