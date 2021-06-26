@@ -17,7 +17,9 @@ entrypoint graph
 [=;{}\(\)]                {return yytext[0];}
 [+\*/-]                   {yylval.string = strdup(yytext);return OPERATOR;}
 int                       {return INT;}
+else-if                   {return ELSE_IF;}
 if                        {return IF;}
+else                      {return ELSE;}
 string                    {return STRING;}
 {entrypoint}              {return GRAPH;}
 \"{ascii-printables}\"    {yylval.string = strdup(yytext);return STRING_VALUE;}

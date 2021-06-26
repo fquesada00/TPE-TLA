@@ -20,10 +20,23 @@ void translateAstCodeNode(AstCodeNode * node){
 }
 
 void translateAstIfNode(AstIfNode * node){
-    printf("if(");
-    translateAstBooleanExpressionNode(node->condition);
-    printf(")");
-    translateAstBlockcodeNode(node->blockcode);    
+    if(node->type == IF_TYPE) {
+        printf("if(");
+        translateAstBooleanExpressionNode(node->condition);
+        printf(")");
+    } else {
+        if(node->condition == NULL){
+            printf("else ");
+        }
+        else{
+            printf("else if(");
+            translateAstBooleanExpressionNode(node->condition);
+            printf(")");
+        }
+    }
+    translateAstBlockcodeNode(node->blockcode);
+    if(node->next != NULL)
+        translateAstIfNode(node->next);  
 }
 void translateAstNodeList(AstNodeList * node){
     AstNodeList * it = node; 
@@ -31,6 +44,7 @@ void translateAstNodeList(AstNodeList * node){
         switch(it->current->type){
             case CODE_TYPE:
             break;
+            case ELSE_IF_TYPE:
             case IF_TYPE:
                 translateAstIfNode((AstIfNode *) it->current);
             break;
@@ -94,7 +108,7 @@ void translateAstBooleanExpressionNode(AstBooleanExpressionNode * node) {
         return;
     }
 
-    translateAstBooleanExpressionNode(node->right);
-    printf(" %s ",node->op);
     translateAstBooleanExpressionNode(node->left);
+    printf(" %s ",node->op);
+    translateAstBooleanExpressionNode(node->right);
 }

@@ -66,11 +66,12 @@ AstDeclarationNode *newAstDeclarationNode(AstDeclarationType data_type, AstNode 
     return declaration;
 }
 
-AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode){
+AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode,int type, AstIfNode * next){
     AstIfNode * new = malloc(sizeof(AstIfNode));
-    new->type = IF_TYPE;
+    new->type = type;
     new->condition = condition;
     new->blockcode = blockcode;
+    new->next = next;
     return new;
 }
 
@@ -95,6 +96,7 @@ AstBooleanExpressionNode *newAstBooleanExpressionNode(AstBooleanExpressionNode *
         int length = strlen(op);
         booleanExpression->op = malloc(sizeof(char) * (length + 1));
         strncpy(booleanExpression->op,op,length);
+        booleanExpression->op[length] = 0;
     }
     booleanExpression->left = left;
     booleanExpression->right = right;
@@ -115,6 +117,7 @@ AstArithmeticExpressionNode *newAstArithmeticExpressionNode(AstArithmeticExpress
         int length = strlen(op);
         arithmeticExpression->op = malloc(sizeof(char) * (length + 1));
         strncpy(arithmeticExpression->op, op,length);
+        arithmeticExpression->op[length] = 0;
     }
     arithmeticExpression->right = right;
     arithmeticExpression->left = left;
@@ -142,10 +145,10 @@ void freeAstIfNode(AstIfNode * node){
 void freeAstDeclarationNode(AstDeclarationNode * node){
     switch(node->data_type){
         case INT_DECLARATION_TYPE:
-            freeAstArithmeticExpressionNode(node->exp);
+            if(node->exp != NULL) freeAstArithmeticExpressionNode(node->exp);
             break;
         case STRING_DECLARATION_TYPE:
-            freeAstConstantExpressionNode(node->str);
+            if(node->str != NULL) freeAstConstantExpressionNode(node->str);
             break;
     }
     free(node->name);

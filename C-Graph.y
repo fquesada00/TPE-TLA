@@ -16,14 +16,14 @@
 %union {struct AstNode * node;int num; char * string;}
 %token GRAPH
 
-%token <string> ID STRING_VALUE IF
+%token <string> ID STRING_VALUE ELSE_IF IF ELSE
 %token <num> NUMBER
 %token INT STRING
 %token <string> OPERATOR 
 %token <string> BINARY_BOOL_OPERATOR
 %token <string> UNARY_BOOL_OPERATOR
 %left OPERATOR BINARY_BOOL_OPERATOR UNARY_BOOL_OPERATOR
-%type <node> blockcode code declaration exp boolExp conditional
+%type <node> blockcode code declaration exp boolExp conditional conditionalElse
 %type <num> term
 %%
 program:        GRAPH '(' ')' blockcode     {entrypoint = newAstGraphNode((AstBlockcodeNode *)$4); return 1;}
@@ -36,7 +36,7 @@ code:           ';'                         {$$ = (AstNode *) newAstCodeNode((As
                 |
                 code conditional            {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
-                                            {$$ = NULL;}
+                                            {$$ = (AstNode *) NULL;}
 ;
 declaration:    INT ID                      {$$ = (AstNode *) newAstDeclarationNode(INT_DECLARATION_TYPE,(AstNode *)NULL,$2);free($2);}
                 |                
@@ -52,7 +52,14 @@ exp:            term                        {$$ = (AstNode *) newAstArithmeticEx
 ;
 term:           NUMBER                      {$$ = $1;}			    
 ;
-conditional:    IF '(' boolExp ')' blockcode {$$ = (AstNode *) newAstIfNode((AstBooleanExpressionNode *)$3,(AstBlockcodeNode * )$5);}
+conditional:    IF '(' boolExp ')' blockcode conditionalElse    {$$ = (AstNode *) newAstIfNode((AstBooleanExpressionNode *)$3,(AstBlockcodeNode * )$5,IF_TYPE, (AstIfNode *) $6);}                           
+;
+conditionalElse:   
+                ELSE_IF '(' boolExp ')' blockcode conditionalElse  {$$ = (AstNode *) newAstIfNode((AstBooleanExpressionNode *)$3,(AstBlockcodeNode * )$5, ELSE_IF_TYPE, (AstIfNode *) $6);}
+                |
+                ELSE blockcode                                      {$$ = (AstNode *) newAstIfNode((AstBooleanExpressionNode *) NULL,(AstBlockcodeNode * )$2,ELSE_IF_TYPE, (AstIfNode *) NULL);}
+                |
+                                                                    {$$ = (AstNode *) NULL;}
 ;
 boolExp:        term                              {$$ = (AstNode *) newAstBooleanExpressionNode(NULL,NULL,NULL,$1);}
                 |

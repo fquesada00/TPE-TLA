@@ -6,7 +6,8 @@ typedef enum {
     GRAPH_TYPE,
     BLOCKCODE_TYPE,
     CODE_TYPE,
-    IF_TYPE,   
+    IF_TYPE,
+    ELSE_IF_TYPE,   
     DECLARATION_TYPE,
     NODE_LIST_TYPE,
     ARITHMETIC_EXP_TYPE,
@@ -45,6 +46,7 @@ typedef struct AstIfNode {
     AstNodeType type;
     struct AstBooleanExpressionNode * condition;
     AstBlockcodeNode * blockcode;
+    struct AstIfNode * next;
 } AstIfNode;
 
 typedef enum {
@@ -87,7 +89,7 @@ AstCodeNode *newAstCodeNode(AstNode *current, AstCodeNode *code);
 AstNodeList * newAstNodeList(AstNode * current,AstCodeNode * next);
 AstDeclarationNode * newAstDeclarationNode(AstDeclarationType data_type, AstNode * node, char * name);
 AstBooleanExpressionNode *newAstBooleanExpressionNode(AstBooleanExpressionNode *left, AstBooleanExpressionNode *right, char *op ,int value);
-AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode);
+AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode,int type, AstIfNode * next);
 AstArithmeticExpressionNode * newAstArithmeticExpressionNode(AstArithmeticExpressionNode * right, AstArithmeticExpressionNode * left, char * op, int value);
 AstConstantExpressionNode * newAstConstantExpressionNode(char * stringValue);
 void freeAstGraphNode(AstGraphNode * node);
