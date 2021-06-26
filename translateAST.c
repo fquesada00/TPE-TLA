@@ -43,11 +43,20 @@ void translateAstDeclarationNode(AstDeclarationNode * node){
         break;
     case STRING_DECLARATION_TYPE:
         printf("char * %s", node->name);
+        if(node->exp != NULL){
+            printf(" = ");
+            translateAstConstantNode((AstConstantExpressionNode *)node->exp);
+        }
         break;
     }
     printf(";\n");
 
 }
+
+void translateAstConstantNode(AstConstantExpressionNode * node){
+    printf("%s",node->stringValue);
+}
+
 void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node) {
     if(node->left == NULL && node->right == NULL){
         printf("%d",node->value);

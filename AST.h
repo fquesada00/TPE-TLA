@@ -19,11 +19,13 @@ typedef struct AstNodeList{
     AstNodeType type;
     AstNode * current;
     struct AstNodeList * next;
-}AstNodeList;
+}AstNodeList; //Este es el item de cada lista
 
-typedef struct AstCodeNode{
+
+typedef struct AstCodeNode{ //Esta es la wrapper de la lista.
     AstNodeType type;
-    AstNodeList * statements;
+    AstNodeList * statements; // int a=5;string hola;
+    AstNodeList * lastStatement;
 }AstCodeNode;
 
 typedef struct AstBlockcodeNode{
@@ -54,18 +56,24 @@ typedef struct AstArithmeticExpressionNode{
     int value;
 }AstArithmeticExpressionNode;
 
+typedef struct AstConstantExpressionNode {
+    AstNodeType type;
+    char * stringValue;
+} AstConstantExpressionNode;
+
 typedef struct AstDeclarationNode {
     AstNodeType type;
     AstDeclarationType data_type;
     char * name;
     AstArithmeticExpressionNode * exp;
-    // AstConstantExpressionNode * str;
+    AstConstantExpressionNode * str;
 } AstDeclarationNode;
 
 AstGraphNode * newAstGraphNode(AstBlockcodeNode * node);
 AstBlockcodeNode * newAstBlockcodeNode(AstCodeNode * node);
-AstCodeNode * newAstCodeNode(AstNode * current,AstNodeList * next);
-AstNodeList * newAstNodeList(AstNode * current,AstNodeList * next);
+AstCodeNode *newAstCodeNode(AstNode *current, AstCodeNode *code);
+AstNodeList * newAstNodeList(AstNode * current,AstCodeNode * next);
 AstDeclarationNode * newAstDeclarationNode(AstDeclarationType data_type, AstArithmeticExpressionNode * node, char * name);
 AstArithmeticExpressionNode * newAstArithmeticExpressionNode(AstArithmeticExpressionNode * right, AstArithmeticExpressionNode * left, char * op, int value);
+AstConstantExpressionNode * newAstConstantExpressionNode(char * stringValue);
 #endif

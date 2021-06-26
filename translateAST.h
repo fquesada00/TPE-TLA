@@ -9,5 +9,5 @@ void translateAstCodeNode(AstCodeNode * node);
 void translateAstNodeList(AstNodeList * node);
 void translateAstDeclarationNode(AstDeclarationNode * node);
 void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node);
-
+void translateAstConstantNode(AstConstantExpressionNode * node);
 #endif
