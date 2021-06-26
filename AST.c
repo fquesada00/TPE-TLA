@@ -47,13 +47,12 @@ AstNodeList *newAstNodeList(AstNode *current, AstCodeNode *code)
     return list;
 }
 
-AstDeclarationNode *newAstDeclarationNode(AstDeclarationType data_type, AstNode *node, char *name)
-{
+AstDeclarationNode * newAstDeclarationNode(AstNode * node, char * name,AstDeclarationType dataType){
     // printf(" at %s\n", __func__);
     AstDeclarationNode *declaration = malloc(sizeof(AstDeclarationNode));
     declaration->type = DECLARATION_TYPE;
-    declaration->data_type = data_type;
-    switch(data_type){
+    declaration->dataType = dataType;
+    switch(dataType){
         case INT_DECLARATION_TYPE:
             declaration->exp = (AstArithmeticExpressionNode *)node;
             break;
@@ -65,6 +64,24 @@ AstDeclarationNode *newAstDeclarationNode(AstDeclarationType data_type, AstNode 
     strcpy(declaration->name, name);
     return declaration;
 }
+
+AstDefinitionNode * newAstDefinitionNode(AstNode * node, char * name, AstDeclarationType dataType){
+    AstDefinitionNode *definition = malloc(sizeof(AstDefinitionNode));
+    definition->type = DEFINITION_TYPE;
+    definition->dataType = dataType;
+    switch(dataType){
+        case INT_DECLARATION_TYPE:
+            definition->exp = (AstArithmeticExpressionNode *)node;
+            break;
+        case STRING_DECLARATION_TYPE:
+            definition->str = (AstConstantExpressionNode *) node;
+            break;
+    }
+    definition->name = malloc(sizeof(char) * (strlen(name) + 1));
+    strcpy(definition->name, name);
+    return definition;
+}
+
 
 AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode,int type, AstIfNode * next){
     AstIfNode * new = malloc(sizeof(AstIfNode));
@@ -138,12 +155,37 @@ void freeAstConstantExpressionNode(AstConstantExpressionNode * node){
     free(node);
 }
 
-void freeAstIfNode(AstIfNode * node){
-    //TODO
+void freeAstBooleanExpressionNode(AstBooleanExpressionNode * node){
+    if(node->left != NULL && node->right != NULL){
+        freeAstBooleanExpressionNode(node->right);
+        free(node->op);
+        freeAstBooleanExpressionNode(node->left);
+    }else if(node->left == NULL && node->right != NULL){
+        freeAstBooleanExpressionNode(node->right);
+        free(node->op);
+    }else if(node->left != NULL && node->right == NULL){
+        freeAstBooleanExpressionNode(node->left);
+        free(node->op);
+    }
+    free(node);
 }
 
 void freeAstDeclarationNode(AstDeclarationNode * node){
-    switch(node->data_type){
+    switch(node->dataType){
+        case INT_DECLARATION_TYPE:
+            if(node->exp != NULL) freeAstArithmeticExpressionNode(node->exp);
+            break;
+        case STRING_DECLARATION_TYPE:
+            if(node->str != NULL) freeAstConstantExpressionNode(node->str);
+            break;
+    }
+    free(node->name);
+    free(node);
+}
+
+
+void freeAstDefinitionNode(AstDefinitionNode * node){
+    switch(node->dataType){
         case INT_DECLARATION_TYPE:
             if(node->exp != NULL) freeAstArithmeticExpressionNode(node->exp);
             break;
@@ -170,6 +212,9 @@ void freeAstNodeList(AstNodeList * node){
                 case IF_TYPE:
                     freeAstIfNode((AstIfNode *)it->current);
                     break;
+                case DEFINITION_TYPE:
+                    freeAstDefinitionNode((AstDefinitionNode *)it->current);
+                    break;
             }
             curr = it;
             it = it->next;
@@ -187,6 +232,14 @@ void freeAstCodeNode(AstCodeNode * node){
 
 void freeAstBlockcodeNode(AstBlockcodeNode * node){
     freeAstCodeNode(node->code);
+    free(node);
+}
+
+void freeAstIfNode(AstIfNode * node){
+    if(node->condition != NULL) freeAstBooleanExpressionNode(node->condition);
+    freeAstBlockcodeNode(node->blockcode);
+    if(node->next != NULL)
+        freeAstIfNode(node->next);
     free(node);
 }
 
