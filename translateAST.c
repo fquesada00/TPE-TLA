@@ -6,6 +6,7 @@
 void translateAstGraphNode(AstGraphNode * node){
     printf("int main()");
     translateAstBlockcodeNode(node->blockcode);
+    freeAstGraphNode(node);    
 }
 void translateAstBlockcodeNode(AstBlockcodeNode * node){
     printf("{\n");
@@ -13,7 +14,9 @@ void translateAstBlockcodeNode(AstBlockcodeNode * node){
     printf("\n}");
 }
 void translateAstCodeNode(AstCodeNode * node){
-    translateAstNodeList(node->statements);
+    if(node != NULL){
+        translateAstNodeList(node->statements);
+    }
 }
 void translateAstNodeList(AstNodeList * node){
     AstNodeList * it = node; 
@@ -35,17 +38,17 @@ void translateAstDeclarationNode(AstDeclarationNode * node){
     switch (node->data_type)
     {
     case INT_DECLARATION_TYPE:
-        printf("int %s",node->name);
+        printf("\tint %s",node->name);
         if(node->exp != NULL){
             printf(" = ");
             translateAstArithmeticExpressionNode(node->exp);
         }
         break;
     case STRING_DECLARATION_TYPE:
-        printf("char * %s", node->name);
-        if(node->exp != NULL){
+        printf("\tchar * %s", node->name);
+        if(node->str != NULL){
             printf(" = ");
-            translateAstConstantNode((AstConstantExpressionNode *)node->exp);
+            translateAstConstantNode((AstConstantExpressionNode *)node->str);
         }
         break;
     }
@@ -62,7 +65,7 @@ void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node) {
         printf("%d",node->value);
         return;
     }
-    translateAstArithmeticExpressionNode(node->left);
-    printf("%s",node->op);
     translateAstArithmeticExpressionNode(node->right);
+    printf(" %s ",node->op);
+    translateAstArithmeticExpressionNode(node->left);
 }

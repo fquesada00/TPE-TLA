@@ -5,7 +5,7 @@
 
 AstGraphNode *newAstGraphNode(AstBlockcodeNode *node)
 {
-    printf(" at %s\n", __func__);
+    // printf(" at %s\n", __func__);
     AstGraphNode *graph = malloc(sizeof(AstGraphNode));
     graph->type = GRAPH_TYPE;
     graph->blockcode = node;
@@ -13,7 +13,7 @@ AstGraphNode *newAstGraphNode(AstBlockcodeNode *node)
 }
 AstBlockcodeNode *newAstBlockcodeNode(AstCodeNode *node)
 {
-    printf(" at %s\n", __func__);
+    // printf(" at %s\n", __func__);
     AstBlockcodeNode *blockcode = malloc(sizeof(AstBlockcodeNode));
     blockcode->type = BLOCKCODE_TYPE;
     blockcode->code = node;
@@ -22,12 +22,14 @@ AstBlockcodeNode *newAstBlockcodeNode(AstCodeNode *node)
 
 AstCodeNode *newAstCodeNode(AstNode *current, AstCodeNode *code)
 {
-    printf(" at %s\n", __func__);
+    // printf(" at %s\n", __func__);
     if (code == NULL)
     {
         code = malloc(sizeof(AstCodeNode));
+        code->type = CODE_TYPE;
+        code->statements = NULL;
+        code->lastStatement = NULL;
     }
-    code->type = CODE_TYPE;
     AstNodeList * node = newAstNodeList(current, code);
     if(code->statements == NULL) code->statements = node;
     code->lastStatement = node;
@@ -36,23 +38,30 @@ AstCodeNode *newAstCodeNode(AstNode *current, AstCodeNode *code)
 
 AstNodeList *newAstNodeList(AstNode *current, AstCodeNode *code)
 {
-    printf(" at %s\n", __func__);
+    // printf(" at %s\n", __func__);
     AstNodeList *list = malloc(sizeof(AstNodeList));
     list->type = NODE_LIST_TYPE;
     list->current = current;
-    if(code->lastStatement != NULL) code->lastStatement->next = list;
-    else list->next = NULL;
+    if(code != NULL && code->lastStatement != NULL) code->lastStatement->next = list;
+    list->next = NULL;
     return list;
 }
 
-AstDeclarationNode *newAstDeclarationNode(AstDeclarationType data_type, AstArithmeticExpressionNode *node, char *name)
+AstDeclarationNode *newAstDeclarationNode(AstDeclarationType data_type, AstNode *node, char *name)
 {
-    printf(" at %s\n", __func__);
+    // printf(" at %s\n", __func__);
     AstDeclarationNode *declaration = malloc(sizeof(AstDeclarationNode));
     declaration->type = DECLARATION_TYPE;
     declaration->data_type = data_type;
-    declaration->exp = node;
-    declaration->name = malloc(sizeof(char) * strlen(name));
+    switch(data_type){
+        case INT_DECLARATION_TYPE:
+            declaration->exp = (AstArithmeticExpressionNode *)node;
+            break;
+        case STRING_DECLARATION_TYPE:
+            declaration->str = (AstConstantExpressionNode *) node;
+            break;
+    }
+    declaration->name = malloc(sizeof(char) * (strlen(name) + 1));
     strcpy(declaration->name, name);
     return declaration;
 }
@@ -61,16 +70,16 @@ AstConstantExpressionNode *newAstConstantExpressionNode(char *stringValue)
 {
     AstConstantExpressionNode *constantExpression = malloc(sizeof(AstConstantExpressionNode));
     constantExpression->type = STRING_DECLARATION_TYPE;
-    int i = strlen(stringValue);
-    constantExpression->stringValue = malloc(i * (sizeof(char)) + 1);
+    int i = strnlen(stringValue,MAX_STRING_LENGTH);
+    constantExpression->stringValue = malloc((i+1) * (sizeof(char)));
     strncpy(constantExpression->stringValue, stringValue, i);
-    constantExpression->stringValue[i + 1] = 0;
+    constantExpression->stringValue[i] = 0;
     return constantExpression;
 }
 
 AstArithmeticExpressionNode *newAstArithmeticExpressionNode(AstArithmeticExpressionNode *right, AstArithmeticExpressionNode *left, char *op, int value)
 {
-    printf(" at %s\n", __func__);
+    // printf(" at %s\n", __func__);
     AstArithmeticExpressionNode *arithmeticExpression = malloc(sizeof(AstArithmeticExpressionNode));
     arithmeticExpression->type = ARITHMETIC_EXP_TYPE;
     if (right == NULL && left == NULL)
@@ -79,10 +88,81 @@ AstArithmeticExpressionNode *newAstArithmeticExpressionNode(AstArithmeticExpress
     }
     else
     {
-        arithmeticExpression->op = malloc(sizeof(char) * strlen(op));
+        arithmeticExpression->op = malloc(sizeof(char) * (strlen(op) + 1));
         strcpy(arithmeticExpression->op, op);
     }
     arithmeticExpression->right = right;
     arithmeticExpression->left = left;
     return arithmeticExpression;
+}
+
+void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode * node){
+    if(node->left != NULL && node->right != NULL){
+        freeAstArithmeticExpressionNode(node->right);
+        free(node->op);
+        freeAstArithmeticExpressionNode(node->left);
+    }
+    free(node);
+}
+
+void freeAstConstantExpressionNode(AstConstantExpressionNode * node){
+    free(node->stringValue);
+    free(node);
+}
+
+void freeAstIfNode(AstIfNode * node){
+    //TODO
+}
+
+void freeAstDeclarationNode(AstDeclarationNode * node){
+    switch(node->data_type){
+        case INT_DECLARATION_TYPE:
+            freeAstArithmeticExpressionNode(node->exp);
+            break;
+        case STRING_DECLARATION_TYPE:
+            freeAstConstantExpressionNode(node->str);
+            break;
+    }
+    free(node->name);
+    free(node);
+}
+
+
+void freeAstNodeList(AstNodeList * node){
+    AstNodeList *curr,* it = node;
+    while(it != NULL){
+        if(it->current != NULL){
+            switch(it->current->type){
+                case DECLARATION_TYPE:
+                    freeAstDeclarationNode((AstDeclarationNode *)it->current);
+                    break;
+                case ARITHMETIC_EXP_TYPE:
+                    freeAstArithmeticExpressionNode((AstArithmeticExpressionNode *)it->current);
+                    break;
+                case IF_TYPE:
+                    freeAstIfNode((AstIfNode *)it->current);
+                    break;
+            }
+            curr = it;
+            it = it->next;
+            free(curr);
+        }
+    }
+}
+
+void freeAstCodeNode(AstCodeNode * node){
+    if(node != NULL){
+        freeAstNodeList(node->statements);
+        free(node);
+    }
+}
+
+void freeAstBlockcodeNode(AstBlockcodeNode * node){
+    freeAstCodeNode(node->code);
+    free(node);
+}
+
+void freeAstGraphNode(AstGraphNode * node){
+    freeAstBlockcodeNode(node->blockcode);
+    free(node);
 }

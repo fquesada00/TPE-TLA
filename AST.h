@@ -1,5 +1,6 @@
 #ifndef AST_H
 #define AST_H
+#define MAX_STRING_LENGTH 256
 
 typedef enum {
     GRAPH_TYPE,
@@ -8,7 +9,7 @@ typedef enum {
     IF_TYPE,   
     DECLARATION_TYPE,
     NODE_LIST_TYPE,
-    ARITHMETIC_EXP_TYPE
+    ARITHMETIC_EXP_TYPE,
 } AstNodeType;
 
 typedef struct AstNode {
@@ -73,7 +74,8 @@ AstGraphNode * newAstGraphNode(AstBlockcodeNode * node);
 AstBlockcodeNode * newAstBlockcodeNode(AstCodeNode * node);
 AstCodeNode *newAstCodeNode(AstNode *current, AstCodeNode *code);
 AstNodeList * newAstNodeList(AstNode * current,AstCodeNode * next);
-AstDeclarationNode * newAstDeclarationNode(AstDeclarationType data_type, AstArithmeticExpressionNode * node, char * name);
+AstDeclarationNode * newAstDeclarationNode(AstDeclarationType data_type, AstNode * node, char * name);
 AstArithmeticExpressionNode * newAstArithmeticExpressionNode(AstArithmeticExpressionNode * right, AstArithmeticExpressionNode * left, char * op, int value);
 AstConstantExpressionNode * newAstConstantExpressionNode(char * stringValue);
+void freeAstGraphNode(AstGraphNode * node);
 #endif

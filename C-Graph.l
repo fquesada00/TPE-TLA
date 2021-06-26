@@ -8,16 +8,17 @@
 %}
 digits [0-9]+
 alpha [a-zA-Z]{1,256}
-alphaspaces [a-z A-Z]{1,256}
+ascii-printables [ -~]{1,256}
 ignore [ \t\n]+
 entrypoint graph
 %% 
-[+=;{}\(\)-]              {return yytext[0];}
+[=;{}\(\)]           {return yytext[0];}
+[+\*/-]                   {yylval.string = strdup(yytext);return OPERATOR;}
 int                       {return INT;}
 string                    {return STRING;}
-{entrypoint}              {printf("Starting program....\n");return GRAPH;}
-\"{alphaspaces}\"         {yylval.string = strdup(yytext);return STRING_VALUE;}
-{alpha}                   {puts(yytext);yylval.string = strdup(yytext);return ID;}
+{entrypoint}              {return GRAPH;}
+\"{ascii-printables}\"    {yylval.string = strdup(yytext);return STRING_VALUE;}
+{alpha}                   {yylval.string = strdup(yytext);return ID;}
 {digits}                  {yylval.num = atoi(yytext);return NUMBER;}
 {ignore}                  ;
 .                         ;

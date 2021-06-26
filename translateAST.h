@@ -2,7 +2,6 @@
 #define TRANSLATE_AST_H_
 
 #include "AST.h"
-
 void translateAstGraphNode(AstGraphNode * node);
 void translateAstBlockcodeNode(AstBlockcodeNode * node);
 void translateAstCodeNode(AstCodeNode * node);
