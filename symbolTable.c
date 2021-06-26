@@ -1,21 +1,7 @@
 #include <string.h>
+#include <stdlib.h>
+#include "symbolTable.h"
 #define MAX_STRING_LEN 256
-typedef struct Symbol{
-    char * name;
-    struct Symbol * next; 
-}Symbol;
-typedef struct SymbolTable{
-    Symbol * first;
-    Symbol * last;
-    struct SymbolTable * prev;
-    int size;
-}SymbolTable;
-
-typedef struct ScopeTable{
-    SymbolTable * top;
-    int size;
-}ScopeTable;
-
 
 void freeSymbolTable(SymbolTable * symbolTable){
     Symbol *curr,* it = symbolTable->first;
@@ -28,9 +14,8 @@ void freeSymbolTable(SymbolTable * symbolTable){
     free(symbolTable);
 }
 
-
 void pushScope(ScopeTable * scopeTable){
-    SymbolTable * new = malloc(sizeof(SymbolTable));;
+    SymbolTable * new = malloc(sizeof(SymbolTable));
     new->first = new->last = NULL;
     new->size = 0;
     new->prev = scopeTable->top;
@@ -49,30 +34,35 @@ void popScope(ScopeTable * scopeTable){
 }
 
 
-int findSymbolInTable(SymbolTable * symbolTable,char * name){
+Symbol * findSymbolInTable(SymbolTable * symbolTable,char * name){
     Symbol * it = symbolTable->first;
     while(it != NULL){
-        if(strcmp(it->name,name) == 0)  return 1;
+        if(strncmp(it->name,name,MAX_STRING_LEN) == 0)  return it;
         it = it->next;
     }
-    return 0;
+    return NULL;
 }
 
-int findSymbol(ScopeTable * scopeTable,char * name){
+Symbol *  findSymbol(ScopeTable * scopeTable,char * name){
     SymbolTable * it = scopeTable->top;
+    Symbol * ret = NULL;
     while (it != NULL)
     {
-        if(findSymbolInTable(it,name))
-            return 1;
+        if((ret=findSymbolInTable(it,name)) != NULL)
+            break;
         it = it->prev;
     }
-    return 0;
+    return ret;
 }
 
-void addSymbolToTable(SymbolTable * symbolTable,char * name){
+void addSymbolToTable(SymbolTable * symbolTable,char * name, AstDeclarationType dataType){
     
     Symbol * new = malloc(sizeof(Symbol));
     new->next = NULL;
+    int len = strnlen(name,MAX_STRING_LEN);
+    new->name = malloc((len + 1) * sizeof(char));
+    strncpy(new->name,name,len + 1);
+    new->dataType = dataType;
     if(symbolTable->size == 0){
         symbolTable->first = new;
     }else{
@@ -83,9 +73,14 @@ void addSymbolToTable(SymbolTable * symbolTable,char * name){
 
 }
 
-int addSymbol(ScopeTable * scopeTable,char * name){
+int addSymbol(ScopeTable * scopeTable,char * name, AstDeclarationType dataType){
     if(scopeTable == NULL || scopeTable->top == NULL)
         return -1;
     
-    addSymbolToTable(scopeTable->top,name);
+    addSymbolToTable(scopeTable->top,name, dataType);
+    return 0;
+}
+
+ScopeTable * createScopeTable() {
+    return calloc(1, sizeof(ScopeTable));
 }

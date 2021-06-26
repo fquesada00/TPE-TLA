@@ -10,6 +10,7 @@ typedef enum {
     IF_TYPE,
     ELSE_IF_TYPE,   
     DECLARATION_TYPE,
+    DEFINITION_TYPE,
     NODE_LIST_TYPE,
     ARITHMETIC_EXP_TYPE,
     BOOLEAN_EXP_TYPE,
@@ -97,21 +98,40 @@ typedef struct AstConstantExpressionNode {
 
 typedef struct AstDeclarationNode {
     AstNodeType type;
-    AstDeclarationType data_type;
+    AstDeclarationType dataType;
     char * name;
     AstArithmeticExpressionNode * exp;
     AstConstantExpressionNode * str;
 } AstDeclarationNode;
 
+typedef struct AstDefinitionNode {
+    AstNodeType type;
+    char * name;
+    AstDeclarationType dataType;
+    AstArithmeticExpressionNode * exp;
+    AstConstantExpressionNode * str;
+}AstDefinitionNode;
+
 AstGraphNode * newAstGraphNode(AstBlockcodeNode * node);
 AstBlockcodeNode * newAstBlockcodeNode(AstCodeNode * node);
 AstCodeNode *newAstCodeNode(AstNode *current, AstCodeNode *code);
 AstNodeList * newAstNodeList(AstNode * current,AstCodeNode * next);
-AstDeclarationNode * newAstDeclarationNode(AstDeclarationType data_type, AstNode * node, char * name);
+AstDeclarationNode * newAstDeclarationNode(AstNode * node, char * name,AstDeclarationType dataType);
 AstBooleanExpressionNode *newAstBooleanExpressionNode(AstBooleanExpressionNode *left, AstBooleanExpressionNode *right, char *op ,int value);
 AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode,int type, AstIfNode * next);
 AstForNode * newAstForNode(AstDeclarationNode * initialDeclaration,AstBooleanExpressionNode * loopCondition,AstDeclarationNode * reDeclaration,AstBlockcodeNode * blockcode);
 AstArithmeticExpressionNode *newAstArithmeticExpressionNode(AstArithmeticExpressionNode *left, AstArithmeticExpressionNode *right, char *op, int value);
 AstConstantExpressionNode * newAstConstantExpressionNode(char * stringValue);
+AstDefinitionNode * newAstDefinitionNode(AstNode * node,char * name, AstDeclarationType dataType);
+void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode * node);
+void freeAstConstantExpressionNode(AstConstantExpressionNode * node);
+void freeAstBooleanExpressionNode(AstBooleanExpressionNode * node);
+void freeAstDeclarationNode(AstDeclarationNode * node);
+void freeAstDefinitionNode(AstDefinitionNode * node);
 void freeAstGraphNode(AstGraphNode * node);
+void freeAstNodeList(AstNodeList * node);
+void freeAstIfNode(AstIfNode * node);
+void freeAstBlockcodeNode(AstBlockcodeNode * node);
+void freeAstCodeNode(AstCodeNode * node);
+
 #endif

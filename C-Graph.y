@@ -4,12 +4,14 @@
     #include <stdio.h>
     #include "AST.h"
     #include "translateAST.h"
+    #include "symbolTable.h"
     #define MAX_IDENTIFIER_LENGTH 256
-    #define YYDEBUG 1
-    int yydebug = 1;
+    #define YYDEBUG 0
+    int yydebug = 0;
     void yyerror (char *s);
     int yylex();
     int yylex_destroy();
+    ScopeTable * scopeTable;
     AstGraphNode * entrypoint;
 %}
 %start program
@@ -23,12 +25,12 @@
 %token <string> BINARY_BOOL_OPERATOR
 %token <string> UNARY_BOOL_OPERATOR
 %left OPERATOR BINARY_BOOL_OPERATOR UNARY_BOOL_OPERATOR
-%type <node> blockcode code declaration exp boolExp conditional conditionalElse forLoop
+%type <node> blockcode code declaration exp boolExp conditional conditionalElse forLoop definition
 %type <num> term
 %%
 program:        GRAPH '(' ')' blockcode     {entrypoint = newAstGraphNode((AstBlockcodeNode *)$4); return 1;}
                 ;
-blockcode:      '{' code '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$2);}
+blockcode:      '{' { pushScope(scopeTable); } code '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$3);popScope(scopeTable);}
                 ;
 code:           ';'                         {$$ = (AstNode *) newAstCodeNode((AstNode *)NULL,(AstCodeNode *)NULL);}
                 |
@@ -38,16 +40,69 @@ code:           ';'                         {$$ = (AstNode *) newAstCodeNode((As
                 |
                 code forLoop                {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
+                code definition ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                |
                                             {$$ = (AstNode *) NULL;}
 ;
-declaration:    INT ID                      {$$ = (AstNode *) newAstDeclarationNode(INT_DECLARATION_TYPE,(AstNode *)NULL,$2);free($2);}
+declaration:    INT ID                      {
+                                                if(findSymbol(scopeTable,$2)){
+                                                    yyerror("Cannot redeclare variable");
+                                                }else 
+                                                    addSymbol(scopeTable,$2,INT_DECLARATION_TYPE);
+                                                $$ = (AstNode *) newAstDeclarationNode((AstNode *)NULL,$2,INT_DECLARATION_TYPE);
+                                                free($2);
+                                            }
                 |                
-                INT ID '=' exp              {$$ = (AstNode *) newAstDeclarationNode(INT_DECLARATION_TYPE, (AstNode *)$4, $2);free($2);}
+                INT ID '=' exp              {
+                                                if(findSymbol(scopeTable,$2)){
+                                                    yyerror("Cannot redeclare variable");
+                                                }else
+                                                    addSymbol(scopeTable,$2,INT_DECLARATION_TYPE);
+                                                $$ = (AstNode *) newAstDeclarationNode((AstNode *)$4, $2,INT_DECLARATION_TYPE);
+                                                free($2);
+                                                }
                 |
-                STRING ID                   {$$ = (AstNode *) newAstDeclarationNode(STRING_DECLARATION_TYPE,(AstNode *)NULL,$2);free($2);}
+                STRING ID                   {
+                                                if(findSymbol(scopeTable,$2)){
+                                                        yyerror("Cannot redeclare variable");
+                                                }else
+                                                    addSymbol(scopeTable,$2,STRING_DECLARATION_TYPE);
+                                                $$ = (AstNode *) newAstDeclarationNode((AstNode *)NULL,$2,STRING_DECLARATION_TYPE);
+                                                free($2);
+                                            }
                 |
-                STRING ID '=' STRING_VALUE  {$$ = (AstNode *) newAstDeclarationNode(STRING_DECLARATION_TYPE,(AstNode *)newAstConstantExpressionNode($4),$2);free($2);free($4);}
-;                
+                STRING ID '=' STRING_VALUE  {   
+                                                if(findSymbol(scopeTable,$2)){
+                                                        yyerror("Cannot redeclare variable");
+                                                }else
+                                                    addSymbol(scopeTable,$2,STRING_DECLARATION_TYPE);
+                                                $$ = (AstNode *) newAstDeclarationNode((AstNode *)newAstConstantExpressionNode($4),$2,STRING_DECLARATION_TYPE);
+                                                free($2);
+                                                free($4);
+                                            }
+;
+definition:     ID '=' exp                  {
+                                                Symbol * symbol;
+                                                if((symbol=findSymbol(scopeTable,$1)) != NULL){
+                                                    if(symbol->dataType != INT_DECLARATION_TYPE)
+                                                        yyerror("Invalid definition data type");
+                                                }else
+                                                    yyerror("Cannot redeclare variable");
+                                                $$ = (AstNode *) newAstDefinitionNode($3,$1,INT_DECLARATION_TYPE);
+                                                free($1);
+                                            }
+                |
+                ID '=' STRING_VALUE         {
+                                                Symbol * symbol;
+                                                if((symbol=findSymbol(scopeTable,$1)) != NULL){
+                                                    if(symbol->dataType != STRING_DECLARATION_TYPE)
+                                                        yyerror("Invalid definition data type");
+                                                }else
+                                                    yyerror("Cannot redeclare variable");
+                                                $$ = (AstNode *) newAstDefinitionNode((AstNode *)newAstConstantExpressionNode($3),$1,STRING_DECLARATION_TYPE);
+                                                free($1);
+                                            }
+;
 exp:            term                        {$$ = (AstNode *) newAstArithmeticExpressionNode((AstArithmeticExpressionNode *) NULL,(AstArithmeticExpressionNode *) NULL, (char *) NULL, $1);}
                 |
                 exp OPERATOR exp            {$$ = (AstNode *) newAstArithmeticExpressionNode((AstArithmeticExpressionNode *) $1, (AstArithmeticExpressionNode *) $3, $2, 0);free($2);}
@@ -78,8 +133,10 @@ forLoop:        FOR '(' declaration ';'  boolExp ';' declaration ')' blockcode {
 
 
 int main (void) {
+    scopeTable = createScopeTable();
 	yyparse();
     yylex_destroy();
+    free(scopeTable);
     translateAstGraphNode(entrypoint);
     return 1;
 }
