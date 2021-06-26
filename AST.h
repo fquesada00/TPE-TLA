@@ -10,6 +10,7 @@ typedef enum {
     DECLARATION_TYPE,
     NODE_LIST_TYPE,
     ARITHMETIC_EXP_TYPE,
+    BOOLEAN_EXP_TYPE,
 } AstNodeType;
 
 typedef struct AstNode {
@@ -56,6 +57,14 @@ typedef struct AstArithmeticExpressionNode{
     char * op;
     int value;
 }AstArithmeticExpressionNode;
+
+typedef struct AstBooleanExpressionNode{
+    AstNodeType type;
+    struct AstBooleanExpressionNode * left;
+    struct AstBooleanExpressionNode * right;
+    char * op;
+    int value;
+} AstBooleanExpressionNode;
 
 typedef struct AstConstantExpressionNode {
     AstNodeType type;
