@@ -77,6 +77,22 @@ AstConstantExpressionNode *newAstConstantExpressionNode(char *stringValue)
     return constantExpression;
 }
 
+AstBooleanExpressionNode *newAstBooleanExpressionNode(AstBooleanExpressionNode *left, AstBooleanExpressionNode *right, char *op ,int value){
+    AstBooleanExpressionNode * booleanExpression = malloc(sizeof(AstBooleanExpressionNode));
+    booleanExpression->type = BOOLEAN_EXP_TYPE;
+    if(left == NULL && right == NULL){
+        booleanExpression->value = value;
+    } 
+    else {
+        int length = strlen(op);
+        booleanExpression->op = malloc(sizeof(char) * (length + 1));
+        strncpy(booleanExpression,op,length);
+    }
+    booleanExpression->left = left;
+    booleanExpression->right = right;
+    return booleanExpression;
+}
+
 AstArithmeticExpressionNode *newAstArithmeticExpressionNode(AstArithmeticExpressionNode *right, AstArithmeticExpressionNode *left, char *op, int value)
 {
     // printf(" at %s\n", __func__);
@@ -88,8 +104,9 @@ AstArithmeticExpressionNode *newAstArithmeticExpressionNode(AstArithmeticExpress
     }
     else
     {
-        arithmeticExpression->op = malloc(sizeof(char) * (strlen(op) + 1));
-        strcpy(arithmeticExpression->op, op);
+        int length = strlen(op);
+        arithmeticExpression->op = malloc(sizeof(char) * (length + 1));
+        strncpy(arithmeticExpression->op, op,length);
     }
     arithmeticExpression->right = right;
     arithmeticExpression->left = left;

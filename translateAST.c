@@ -69,3 +69,24 @@ void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node) {
     printf(" %s ",node->op);
     translateAstArithmeticExpressionNode(node->left);
 }
+
+void translateAstBooleanExpressionNode(AstBooleanExpressionNode * node) { 
+    if(node->left == NULL && node->right == NULL){
+        printf("%d",node->value);
+        return;
+    }
+    else if(node->left == NULL) {
+        printf(" %s ",node->op);
+        translateAstBooleanExpressionNode(node->right);
+        return;
+    }
+    else {
+        printf(" %s ",node->op);
+        translateAstBooleanExpressionNode(node->left);
+        return;
+    }
+
+    translateAstBooleanExpressionNode(node->left);
+    printf(" %s ",node->op);
+    translateAstBooleanExpressionNode(node->right);
+}
