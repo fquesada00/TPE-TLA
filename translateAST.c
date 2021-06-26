@@ -138,6 +138,10 @@ void translateAstNumericExpressionNode(AstNumericExpressionNode * node){
     printf("%d",node->value);
 }
 
+void translateAstIdNode(AstIdNode * node){
+    printf("%s",node->name);
+}
+
 void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node) {
     if(node->left == NULL && node->right == NULL){
         switch (node->value->type)
@@ -145,8 +149,8 @@ void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node) {
         case NUMERIC_TYPE:
             translateAstNumericExpressionNode((AstNumericExpressionNode *)node->value);
             break;
-        case CONSTANT_STRING_TYPE:
-            translateAstConstantNode((AstConstantExpressionNode *)node->value);
+        case ID_TYPE:
+            translateAstIdNode((AstIdNode *)node->value);
             break;
         default:
             break;
@@ -165,8 +169,8 @@ void translateAstBooleanExpressionNode(AstBooleanExpressionNode * node) {
         case NUMERIC_TYPE:
             translateAstNumericExpressionNode((AstNumericExpressionNode *)node->value);
             break;
-        case CONSTANT_STRING_TYPE:
-            translateAstConstantNode((AstConstantExpressionNode *)node->value);
+        case ID_TYPE:
+            translateAstIdNode((AstIdNode *)node->value);
             break;
         default:
             break;

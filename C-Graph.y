@@ -114,7 +114,7 @@ term:           NUMBER                      {$$ = (AstNode *)newAstNumericExpres
                                                 Symbol * symbol;
                                                 if((symbol=findSymbol(scopeTable,$1)) == NULL)
                                                     yyerror("undeclared variable");
-                                                $$ = (AstNode *)newAstConstantExpressionNode($1);
+                                                $$ = (AstNode *)newAstIdNode($1, symbol->dataType);
                                                 free($1);
                                             }
 ;
@@ -133,9 +133,9 @@ boolExp:        term                              {$$ = (AstNode *) newAstBoolea
                 |
                 UNARY_BOOL_OPERATOR boolExp       {$$ = (AstNode *) newAstBooleanExpressionNode(NULL,(AstBooleanExpressionNode *)$2,$1,0);free($1);}
 ;
-//output:         OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintNode($3);free($3);}
+//output:         OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintNode((newAstConstantExpressionNode *)$3);free($3);}
 //                |
-//                OUTPUT '(' ID ')'                 {$$ = (AstNode *) newAstPrintNode((AstDeclarationNode *)$3)->}
+//                OUTPUT '(' term ')'                 {$$ = (AstNode *) newAstPrintNode((newAstConstantExpressionNode *)$3)->}
 ;              
 forLoop:        FOR '(' {pushScope(scopeTable);} declaration ';'  boolExp ';' definition ')' forBlockcode {$$ = (AstNode *)newAstForNode((AstDeclarationNode *)$4,(AstBooleanExpressionNode *)$6,(AstDefinitionNode *)$8,(AstBlockcodeNode *)$10);}
 ;

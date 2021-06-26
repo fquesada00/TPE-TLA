@@ -186,6 +186,16 @@ AstNumericExpressionNode *newAstNumericExpressionNode(int value)
     return new;
 }
 
+AstIdNode * newAstIdNode(char * name,AstDeclarationType type){
+    AstIdNode * new = malloc(sizeof(AstIdNode));
+    new->type = ID_TYPE;
+    int i = strnlen(name,MAX_STRING_LENGTH);
+    new->name = malloc((i+1) * sizeof(char));
+    strncpy(new->name,name,i+1);
+    new->declarationType = type;
+    return new;
+}
+
 void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode *node)
 {
     if (node->left != NULL && node->right != NULL)
@@ -199,8 +209,8 @@ void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode *node)
         case NUMERIC_TYPE:
             freeAstNumericExpressionNode((AstNumericExpressionNode *)node->value);
             break;
-        case CONSTANT_STRING_TYPE:
-            freeAstConstantExpressionNode((AstConstantExpressionNode *)node->value);
+        case ID_TYPE:
+            freeAstIdNode((AstIdNode *) node->value);
         default:
             break;
         }
@@ -239,8 +249,8 @@ void freeAstBooleanExpressionNode(AstBooleanExpressionNode *node)
         case NUMERIC_TYPE:
             freeAstNumericExpressionNode((AstNumericExpressionNode *)node->value);
             break;
-        case CONSTANT_STRING_TYPE:
-            freeAstConstantExpressionNode((AstConstantExpressionNode *)node->value);
+        case ID_TYPE:
+            freeAstIdNode((AstIdNode *) node->value);
         default:
             break;
         }
@@ -340,6 +350,10 @@ void freeAstForNode(AstForNode *node)
 void freeAstBlockcodeNode(AstBlockcodeNode *node)
 {
     freeAstCodeNode(node->code);
+    free(node);
+}
+void freeAstIdNode(AstIdNode * node){
+    free(node->name);
     free(node);
 }
 
