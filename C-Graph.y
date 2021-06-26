@@ -16,14 +16,14 @@
 %union {struct AstNode * node;int num; char * string;}
 %token GRAPH
 
-%token <string> ID STRING_VALUE ELSE_IF IF ELSE
+%token <string> ID STRING_VALUE ELSE_IF IF ELSE FOR
 %token <num> NUMBER
 %token INT STRING
 %token <string> OPERATOR 
 %token <string> BINARY_BOOL_OPERATOR
 %token <string> UNARY_BOOL_OPERATOR
 %left OPERATOR BINARY_BOOL_OPERATOR UNARY_BOOL_OPERATOR
-%type <node> blockcode code declaration exp boolExp conditional conditionalElse
+%type <node> blockcode code declaration exp boolExp conditional conditionalElse forLoop
 %type <num> term
 %%
 program:        GRAPH '(' ')' blockcode     {entrypoint = newAstGraphNode((AstBlockcodeNode *)$4); return 1;}
@@ -36,6 +36,8 @@ code:           ';'                         {$$ = (AstNode *) newAstCodeNode((As
                 |
                 code conditional            {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
+                code forLoop                {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                |
                                             {$$ = (AstNode *) NULL;}
 ;
 declaration:    INT ID                      {$$ = (AstNode *) newAstDeclarationNode(INT_DECLARATION_TYPE,(AstNode *)NULL,$2);free($2);}
@@ -45,7 +47,7 @@ declaration:    INT ID                      {$$ = (AstNode *) newAstDeclarationN
                 STRING ID                   {$$ = (AstNode *) newAstDeclarationNode(STRING_DECLARATION_TYPE,(AstNode *)NULL,$2);free($2);}
                 |
                 STRING ID '=' STRING_VALUE  {$$ = (AstNode *) newAstDeclarationNode(STRING_DECLARATION_TYPE,(AstNode *)newAstConstantExpressionNode($4),$2);free($2);free($4);}
-;
+;                
 exp:            term                        {$$ = (AstNode *) newAstArithmeticExpressionNode((AstArithmeticExpressionNode *) NULL,(AstArithmeticExpressionNode *) NULL, (char *) NULL, $1);}
                 |
                 exp OPERATOR exp            {$$ = (AstNode *) newAstArithmeticExpressionNode((AstArithmeticExpressionNode *) $1, (AstArithmeticExpressionNode *) $3, $2, 0);free($2);}
@@ -61,13 +63,17 @@ conditionalElse:
                 |
                                                                     {$$ = (AstNode *) NULL;}
 ;
-
 boolExp:        term                              {$$ = (AstNode *) newAstBooleanExpressionNode(NULL,NULL,NULL,$1);}
                 |
                 boolExp BINARY_BOOL_OPERATOR boolExp {$$ = (AstNode *) newAstBooleanExpressionNode((AstBooleanExpressionNode *)$1,(AstBooleanExpressionNode *)$3,$2,0);free($2);}
                 |
                 UNARY_BOOL_OPERATOR boolExp       {$$ = (AstNode *) newAstBooleanExpressionNode(NULL,(AstBooleanExpressionNode *)$2,$1,0);free($1);}
 ;
+//output:         OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintNode($3);free($3);}
+//                |
+//                OUTPUT '(' ID ')'                 {$$ = (AstNode *) newAstPrintNode((AstDeclarationNode *)$3)->}
+;              
+forLoop:        FOR '(' declaration ';'  boolExp ';' declaration ')' blockcode {$$ = (AstNode *)newAstForNode((AstDeclarationNode *)$3,(AstBooleanExpressionNode *)$5,(AstDeclarationNode *)$7,(AstBlockcodeNode *)$9);}
 %%
 
 

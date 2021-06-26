@@ -6,12 +6,15 @@ typedef enum {
     GRAPH_TYPE,
     BLOCKCODE_TYPE,
     CODE_TYPE,
+    FOR_TYPE,
     IF_TYPE,
     ELSE_IF_TYPE,   
     DECLARATION_TYPE,
     NODE_LIST_TYPE,
     ARITHMETIC_EXP_TYPE,
     BOOLEAN_EXP_TYPE,
+    INPUT_TYPE,
+    OUTPUT_TYPE,
 } AstNodeType;
 
 typedef struct AstNode {
@@ -36,7 +39,6 @@ typedef struct AstBlockcodeNode{
     AstCodeNode * code;
 }AstBlockcodeNode;
 
-
 typedef struct AstGraphNode {
     AstNodeType type;
     AstBlockcodeNode * blockcode;
@@ -48,6 +50,24 @@ typedef struct AstIfNode {
     AstBlockcodeNode * blockcode;
     struct AstIfNode * next;
 } AstIfNode;
+
+typedef struct AstPrintNode {
+    AstNodeType type;
+    char * string;   
+} AstPrintNode;
+
+typedef struct AstGetNode {
+    AstNodeType type;
+    char * string;
+}AstGetNode;
+
+typedef struct AstForNode{
+    AstNodeType type;
+    struct AstDeclarationNode * initialDeclaration;
+    struct AstBooleanExpressionNode * loopCondition;
+    struct AstDeclarationNode * reDeclaration;
+    struct AstBlockcodeNode * blockcode;
+}AstForNode;
 
 typedef enum {
     INT_DECLARATION_TYPE,
@@ -90,6 +110,7 @@ AstNodeList * newAstNodeList(AstNode * current,AstCodeNode * next);
 AstDeclarationNode * newAstDeclarationNode(AstDeclarationType data_type, AstNode * node, char * name);
 AstBooleanExpressionNode *newAstBooleanExpressionNode(AstBooleanExpressionNode *left, AstBooleanExpressionNode *right, char *op ,int value);
 AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode,int type, AstIfNode * next);
+AstForNode * newAstForNode(AstDeclarationNode * initialDeclaration,AstBooleanExpressionNode * loopCondition,AstDeclarationNode * reDeclaration,AstBlockcodeNode * blockcode);
 AstArithmeticExpressionNode *newAstArithmeticExpressionNode(AstArithmeticExpressionNode *left, AstArithmeticExpressionNode *right, char *op, int value);
 AstConstantExpressionNode * newAstConstantExpressionNode(char * stringValue);
 void freeAstGraphNode(AstGraphNode * node);

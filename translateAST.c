@@ -19,6 +19,16 @@ void translateAstCodeNode(AstCodeNode * node){
     }
 }
 
+void translateAstForNode(AstForNode * node){
+    printf("for(");
+    translateAstDeclarationNode(node->initialDeclaration);
+    translateAstBooleanExpressionNode(node->loopCondition);
+    printf(";");
+    translateAstDeclarationNode(node->reDeclaration);
+    printf(")");
+    translateAstBlockcodeNode(node->blockcode);
+}
+
 void translateAstIfNode(AstIfNode * node){
     if(node->type == IF_TYPE) {
         printf("if(");
@@ -38,6 +48,15 @@ void translateAstIfNode(AstIfNode * node){
     if(node->next != NULL)
         translateAstIfNode(node->next);  
 }
+
+//void translateAstPrintNode(AstPrintNode * node){
+//    printf("printf(\"%s);\n",node->string);
+//}
+
+//void translateAstGetNode(AstGetNode * node){
+//    printf("char 
+//}
+
 void translateAstNodeList(AstNodeList * node){
     AstNodeList * it = node; 
     while(it != NULL){
@@ -48,9 +67,17 @@ void translateAstNodeList(AstNodeList * node){
             case IF_TYPE:
                 translateAstIfNode((AstIfNode *) it->current);
             break;
+            case FOR_TYPE:
+                translateAstForNode((AstForNode * )it->current);
+            break;
             case DECLARATION_TYPE:
                 translateAstDeclarationNode((AstDeclarationNode*) it->current);
             break;
+            //case OUTPUT_TYPE:
+            //    translateAstPrintNode((AstPrintNode*)it->current);
+            //break;
+            //case INPUT_TYPE
+            //    translateAstGetNode((AstGetNode*)it->current);
         }
         it = it->next;
     }
@@ -60,21 +87,21 @@ void translateAstDeclarationNode(AstDeclarationNode * node){
     switch (node->data_type)
     {
     case INT_DECLARATION_TYPE:
-        printf("\tint %s",node->name);
+        printf("int %s",node->name);
         if(node->exp != NULL){
             printf(" = ");
             translateAstArithmeticExpressionNode(node->exp);
         }
         break;
     case STRING_DECLARATION_TYPE:
-        printf("\tchar * %s", node->name);
+        printf("char * %s", node->name);
         if(node->str != NULL){
             printf(" = ");
             translateAstConstantNode((AstConstantExpressionNode *)node->str);
         }
         break;
     }
-    printf(";\n");
+    printf(";");
 
 }
 

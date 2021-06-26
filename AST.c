@@ -66,12 +66,40 @@ AstDeclarationNode *newAstDeclarationNode(AstDeclarationType data_type, AstNode 
     return declaration;
 }
 
+//AstPrintNode *newAstPrintNode(char *printString){
+//    AstPrintNode *new = malloc(sizeof(AstPrintNode));
+//    new->type = OUTPUT_TYPE;
+//    size_t length = strlen(printString);
+//    new->string = malloc(sizeof(char)*length+1);
+//    strncpy(new->string,printString,length);
+//    new->string[length] = 0;
+//}
+
+/*AstGetNode *newAstGetNode(char *getString){
+    AstGetNode *new = malloc(sizeof(AstGetNode));
+    new->type = INPUT_TYPE;
+        size_t length = strlen(getString);
+    new->string = malloc(sizeof(char)*length+1);
+    strncpy(new->string,getString,length);
+    new->string[length] = 0;
+}*/
+
 AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode,int type, AstIfNode * next){
     AstIfNode * new = malloc(sizeof(AstIfNode));
     new->type = type;
     new->condition = condition;
     new->blockcode = blockcode;
     new->next = next;
+    return new;
+}
+
+AstForNode * newAstForNode(AstDeclarationNode * initialDeclaration,AstBooleanExpressionNode * loopCondition,AstDeclarationNode * reDeclaration,AstBlockcodeNode * blockcode) {
+    AstForNode * new = malloc(sizeof(AstForNode));
+    new->type = FOR_TYPE;
+    new->initialDeclaration = initialDeclaration;
+    new->loopCondition = loopCondition;
+    new->reDeclaration = reDeclaration;
+    new->blockcode = blockcode;
     return new;
 }
 
