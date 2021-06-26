@@ -14,7 +14,7 @@ entrypoint graph
 %% 
 (==|!=|>=|<=|>|<|&&|\|\|) {yylval.string = strdup(yytext);return BINARY_BOOL_OPERATOR;}
 !                         {yylval.string = strdup(yytext);return UNARY_BOOL_OPERATOR;}
-[=;{}\(\)]                {return yytext[0];}
+[=;{}\(\)]                {return yytext[0];}   
 [+\*/-]                   {yylval.string = strdup(yytext);return OPERATOR;}
 int                       {return INT;}
 else-if                   {return ELSE_IF;}

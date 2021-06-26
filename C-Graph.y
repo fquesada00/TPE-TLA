@@ -61,6 +61,7 @@ conditionalElse:
                 |
                                                                     {$$ = (AstNode *) NULL;}
 ;
+
 boolExp:        term                              {$$ = (AstNode *) newAstBooleanExpressionNode(NULL,NULL,NULL,$1);}
                 |
                 boolExp BINARY_BOOL_OPERATOR boolExp {$$ = (AstNode *) newAstBooleanExpressionNode((AstBooleanExpressionNode *)$1,(AstBooleanExpressionNode *)$3,$2,0);free($2);}

@@ -90,7 +90,7 @@ AstNodeList * newAstNodeList(AstNode * current,AstCodeNode * next);
 AstDeclarationNode * newAstDeclarationNode(AstDeclarationType data_type, AstNode * node, char * name);
 AstBooleanExpressionNode *newAstBooleanExpressionNode(AstBooleanExpressionNode *left, AstBooleanExpressionNode *right, char *op ,int value);
 AstIfNode * newAstIfNode(AstBooleanExpressionNode * condition,AstBlockcodeNode * blockcode,int type, AstIfNode * next);
-AstArithmeticExpressionNode * newAstArithmeticExpressionNode(AstArithmeticExpressionNode * right, AstArithmeticExpressionNode * left, char * op, int value);
+AstArithmeticExpressionNode *newAstArithmeticExpressionNode(AstArithmeticExpressionNode *left, AstArithmeticExpressionNode *right, char *op, int value);
 AstConstantExpressionNode * newAstConstantExpressionNode(char * stringValue);
 void freeAstGraphNode(AstGraphNode * node);
 #endif

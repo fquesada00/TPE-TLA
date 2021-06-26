@@ -103,7 +103,7 @@ AstBooleanExpressionNode *newAstBooleanExpressionNode(AstBooleanExpressionNode *
     return booleanExpression;
 }
 
-AstArithmeticExpressionNode *newAstArithmeticExpressionNode(AstArithmeticExpressionNode *right, AstArithmeticExpressionNode *left, char *op, int value)
+AstArithmeticExpressionNode *newAstArithmeticExpressionNode(AstArithmeticExpressionNode *left, AstArithmeticExpressionNode *right, char *op, int value)
 {
     // printf(" at %s\n", __func__);
     AstArithmeticExpressionNode *arithmeticExpression = malloc(sizeof(AstArithmeticExpressionNode));

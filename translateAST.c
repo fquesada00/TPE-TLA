@@ -87,9 +87,9 @@ void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node) {
         printf("%d",node->value);
         return;
     }
-    translateAstArithmeticExpressionNode(node->right);
-    printf(" %s ",node->op);
     translateAstArithmeticExpressionNode(node->left);
+    printf(" %s ",node->op);
+    translateAstArithmeticExpressionNode(node->right);
 }
 
 void translateAstBooleanExpressionNode(AstBooleanExpressionNode * node) { 
