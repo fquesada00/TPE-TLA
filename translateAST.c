@@ -24,7 +24,7 @@ void translateAstForNode(AstForNode * node){
     translateAstDeclarationNode(node->initialDeclaration);
     translateAstBooleanExpressionNode(node->loopCondition);
     printf(";");
-    translateAstDeclarationNode(node->reDeclaration);
+    translateAstForDefinitionNode(node->reDeclaration);
     printf(")");
     translateAstBlockcodeNode(node->blockcode);
 }
@@ -109,7 +109,7 @@ void translateAstDeclarationNode(AstDeclarationNode * node){
 
 }
 
-void translateAstDefinitionNode(AstDefinitionNode * node) {
+void translateAstForDefinitionNode(AstDefinitionNode * node){
     printf("%s = ", node->name);
     switch (node->dataType)
     {
@@ -122,6 +122,10 @@ void translateAstDefinitionNode(AstDefinitionNode * node) {
     default:
         break;
     }
+}
+
+void translateAstDefinitionNode(AstDefinitionNode * node) {
+    translateAstForDefinitionNode(node);
     printf(";");
 }
 
@@ -130,9 +134,23 @@ void translateAstConstantNode(AstConstantExpressionNode * node){
     printf("%s",node->stringValue);
 }
 
+void translateAstNumericExpressionNode(AstNumericExpressionNode * node){
+    printf("%d",node->value);
+}
+
 void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node) {
     if(node->left == NULL && node->right == NULL){
-        printf("%d",node->value);
+        switch (node->value->type)
+        {
+        case NUMERIC_TYPE:
+            translateAstNumericExpressionNode((AstNumericExpressionNode *)node->value);
+            break;
+        case CONSTANT_STRING_TYPE:
+            translateAstConstantNode((AstConstantExpressionNode *)node->value);
+            break;
+        default:
+            break;
+        }
         return;
     }
     translateAstArithmeticExpressionNode(node->left);
@@ -142,7 +160,17 @@ void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node) {
 
 void translateAstBooleanExpressionNode(AstBooleanExpressionNode * node) { 
     if(node->left == NULL && node->right == NULL){
-        printf("%d",node->value);
+        switch (node->value->type)
+        {
+        case NUMERIC_TYPE:
+            translateAstNumericExpressionNode((AstNumericExpressionNode *)node->value);
+            break;
+        case CONSTANT_STRING_TYPE:
+            translateAstConstantNode((AstConstantExpressionNode *)node->value);
+            break;
+        default:
+            break;
+        }
         return;
     }
     else if(node->left == NULL) {

@@ -11,4 +11,7 @@ void translateAstBooleanExpressionNode(AstBooleanExpressionNode * node);
 void translateAstArithmeticExpressionNode(AstArithmeticExpressionNode * node);
 void translateAstConstantNode(AstConstantExpressionNode * node);
 void translateAstDefinitionNode(AstDefinitionNode * node);
+void translateAstForNode(AstForNode * node);
+void translateAstNumericExpressionNode(AstNumericExpressionNode * node);
+void translateAstForDefinitionNode(AstDefinitionNode * node);
 #endif
