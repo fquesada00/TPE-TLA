@@ -5,8 +5,8 @@
     #include "AST.h"
     #include "translateAST.h"
     #define MAX_IDENTIFIER_LENGTH 256
-    #define YYDEBUG 1
-    int yydebug = 1;
+    // #define YYDEBUG 1
+    // int yydebug = 1;
     void yyerror (char *s);
     int yylex();
     AstGraphNode * entrypoint;
@@ -20,7 +20,7 @@
 %type <node> blockcode code declaration exp
 %type <num> term
 %%
-program:        GRAPH '(' ')' blockcode     {entrypoint = newAstGraphNode((AstBlockcodeNode *)$4);}
+program:        GRAPH '(' ')' blockcode     {entrypoint = newAstGraphNode((AstBlockcodeNode *)$4); return;}
                 ;
 blockcode:      '{' code '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$2);}
                 ;
@@ -50,7 +50,6 @@ term:           NUMBER                  {$$ = $1;}
 
 int main (void) {
 	yyparse();
-    puts("here");
     translateAstGraphNode(entrypoint);
     return 1;
 }
