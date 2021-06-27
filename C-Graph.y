@@ -142,6 +142,8 @@ term:           NUMBER                      {$$ = (AstNode *)newAstNumericExpres
                                                 Symbol * symbol;
                                                 if((symbol=findSymbol(scopeTable,$1)) == NULL)
                                                     yyerror("undeclared variable");
+                                                if(symbol->dataType != INT_DECLARATION_TYPE) 
+                                                    yyerror("cannot replace char *");
                                                 $$ = (AstNode *)newAstIdNode($1, symbol->dataType);
                                                 free($1);
                                             }
