@@ -16,4 +16,10 @@ void translateAstNumericExpressionNode(AstNumericExpressionNode * node);
 void translateAstForDefinitionNode(AstDefinitionNode * node);
 void translateAstPrintNode(AstPrintNode * node);
 void translateInput(char * name);
+void translateAstGraphNodeDeclarationNode(AstGraphNodeDeclarationNode * node);
+void translateAstGraphEdgeDeclarationNode(AstGraphEdgeDeclarationNode *node);
+void translateAstGraphNodeForeachNode(AstGraphNodeForeachNode *node);
+void translateAstGraphEdgeForeachNode(AstGraphEdgeForeachNode *node);
+void translateAstGraphActionNode(AstGraphActionNode *node);
+
 #endif

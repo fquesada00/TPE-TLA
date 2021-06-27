@@ -8,8 +8,7 @@
 typedef enum edgeType
 {
     INT_EDGE,
-    STRING_EDGE,
-    CHAR_EDGE
+    STRING_EDGE
 } edgeType;
 
 typedef struct GraphEdge
@@ -26,7 +25,7 @@ typedef struct GraphNode
     struct GraphEdgeListElement *firstEdge;
     struct GraphEdgeListElement *it;
     size_t size;
-    int value;
+    char * value;
     size_t id;
 } GraphNode;
 
@@ -81,14 +80,12 @@ Graph *newGraph()
     graph->size++;
 }
 
-GraphNode *newGraphNode(Graph *graph, int value)
+GraphNode *newGraphNode(Graph *graph, char * value)
 {
     GraphNode *n = calloc(1, sizeof(GraphNode));
-    n->firstNode = calloc(1, sizeof(GraphNodeListElement));
-    n->lastNode = n->firstNode;
-    n->firstEdge = calloc(1, sizeof(GraphEdgeListElement));
-    n->lastEdge = n->firstEdge;
-    n->value = value;
+    int len = strnlen(value, 256);
+    n->value = malloc(sizeof(char) * (len+1));
+    strncpy(n->value, value,len + 1);
     n->id = graph->size;
     addGraphNode(graph, n);
     return n;
@@ -106,10 +103,6 @@ GraphNode *newGraphNode(Graph *graph, int value)
     case STRING_EDGE:
         size = sizeof(char) * strnlen((char *)value, STR_MAX_LEN);
         break;
-    case CHAR_EDGE:
-        size = sizeof(char);
-        break;
-
     default:
         break;
     }
@@ -135,7 +128,11 @@ bool isAdjacent(GraphNode *origin, GraphNode *destination)
 void addEdge(GraphNode *node1, GraphNode *node2, void *value, edgeType type)
 {
     if (node1->size == 0)
-    {
+    {   
+        node1->firstNode = calloc(1, sizeof(GraphNodeListElement));
+        node1->lastNode = node1->firstNode;
+        node1->firstEdge = calloc(1, sizeof(GraphEdgeListElement));
+        node1->lastEdge = node1->firstEdge;
         node1->firstEdge->value = newEdge(value, type);
         node1->firstNode->next = NULL;
         node1->lastEdge = node1->firstEdge;
@@ -316,7 +313,14 @@ void printNodeList(GraphNode *node)
     GraphNodeListElement *n = node->firstNode;
     while (e != NULL || n != NULL)
     {
-        printf("%d-%c->%d\n", node->value, *((char *)e->value->weight), n->value->value);
+        switch (e->value->type){
+            case STRING_EDGE:
+                printf("%s--%s->%s\n", node->value, ((char *)e->value->weight), n->value->value);
+            break;
+            case INT_EDGE:
+                    printf("%s--%d->%s\n", node->value, *((int *)e->value->weight), n->value->value);
+            break;
+        }
         e = e->next;
         n = n->next;
     }
@@ -328,7 +332,7 @@ void printGraph(Graph *graph)
     GraphNodeListElement *n = graph->first;
     while (n != NULL)
     {
-        printf("\nPrinting adjacency for node %d\n", n->value->value);
+        printf("\nPrinting adjacency for node %s\n", n->value->value);
         printNodeList(n->value);
         n = n->next;
     }
@@ -467,65 +471,65 @@ void traverseBFS(Graph *graph, GraphNode *node)
     printNodesId(nodesId, idx);
 }
 
-int main()
+int main2()
 {
-    Graph *graph = newGraph();
-    //Node node1, node2, node3, node4, node5
-    GraphNode *node1 = newGraphNode(graph, 1);
-    GraphNode *node2 = newGraphNode(graph, 2);
-    GraphNode *node3 = newGraphNode(graph, 3);
-    GraphNode *node4 = newGraphNode(graph, 4);
-    GraphNode *node5 = newGraphNode(graph, 5);
-    //node1-'h'->node2;
-    char a = 'a'; //-->Necesary?}
-    addEdge(node1, node2, (void *)&a, CHAR_EDGE);
-    addEdge(node1, node3, (void *)&a, CHAR_EDGE);
-    addEdge(node1, node5, (void *)&a, CHAR_EDGE);
+    // Graph *graph = newGraph();
+    // //Node node1, node2, node3, node4, node5
+    // GraphNode *node1 = newGraphNode(graph, "1");
+    // GraphNode *node2 = newGraphNode(graph, "2");
+    // GraphNode *node3 = newGraphNode(graph, "3");
+    // GraphNode *node4 = newGraphNode(graph, "4");
+    // GraphNode *node5 = newGraphNode(graph, "5");
+    // //node1-'h'->node2;
+    // char a = 'a'; //-->Necesary?}
+    // addEdge(node1, node2, (void *)&a, CHAR_EDGE);
+    // addEdge(node1, node3, (void *)&a, CHAR_EDGE);
+    // addEdge(node1, node5, (void *)&a, CHAR_EDGE);
 
-    //node2-'o'->node3->node4;
-    char b = 'h';
-    char c = 'l';
-    addEdge(node2, node3, (void *)&b, CHAR_EDGE);
-    addEdge(node3, node4, (void *)&c, CHAR_EDGE);
-    //node4-'a'->node5;
-    char d = 'a';
-    addEdge(node4, node5, (void *)&d, CHAR_EDGE);
-    //node5-' '->node1;
-    char e = ' ';
-    addEdge(node5, node1, (void *)&e, CHAR_EDGE);
-    //->node5;
-    setRoot(node5);
+    // //node2-'o'->node3->node4;
+    // char b = 'h';
+    // char c = 'l';
+    // addEdge(node2, node3, (void *)&b, CHAR_EDGE);
+    // addEdge(node3, node4, (void *)&c, CHAR_EDGE);
+    // //node4-'a'->node5;
+    // char d = 'a';
+    // addEdge(node4, node5, (void *)&d, CHAR_EDGE);
+    // //node5-' '->node1;
+    // char e = ' ';
+    // addEdge(node5, node1, (void *)&e, CHAR_EDGE);
+    // //->node5;
+    // setRoot(node5);
 
-    //foreach(node in graph) { foreach(edge in node.edge) }
-    GraphNode *aux;
-    GraphEdge *auxE;
-    beginForEachNode(graph);
-    printf("\n-----------    NODE LIST    -----------\n");
-    while (hasNextForEachNode(graph))
-    {
-        aux = nextForEachNode(graph);
-        beginForEachEdge(aux);
-        printf("\n-----------    EDGE LIST NODE %d WITH ID %zu   -----------\n", aux->value, aux->id);
-        while (hasNextForEachEdge(aux))
-        {
-            auxE = nextForEachEdge(aux);
-            printf("[%d - %c]\t", aux->value, *((char *)auxE->weight));
-        }
-    }
-    printf("\n\n");
+    // //foreach(node in graph) { foreach(edge in node.edge) }
+    // GraphNode *aux;
+    // GraphEdge *auxE;
+    // beginForEachNode(graph);
+    // printf("\n-----------    NODE LIST    -----------\n");
+    // while (hasNextForEachNode(graph))
+    // {
+    //     aux = nextForEachNode(graph);
+    //     beginForEachEdge(aux);
+    //     printf("\n-----------    EDGE LIST NODE %d WITH ID %zu   -----------\n", aux->value, aux->id);
+    //     while (hasNextForEachEdge(aux))
+    //     {
+    //         auxE = nextForEachEdge(aux);
+    //         printf("[%d - %c]\t", aux->value, *((char *)auxE->weight));
+    //     }
+    // }
+    // printf("\n\n");
 
-    // traverse DFS
-    traverseDFS(graph, node1);
+    // // traverse DFS
+    // traverseDFS(graph, node1);
 
-    // traverse BFS
-    traverseBFS(graph, node1);
+    // // traverse BFS
+    // traverseBFS(graph, node1);
+
+    // // printGraph(graph);
+
+    // // destroy node1
+    // removeNode(graph, node1);
 
     // printGraph(graph);
 
-    // destroy node1
-    removeNode(graph, node1);
-
-    printGraph(graph);
-
-    freeGraph(graph);
+    // freeGraph(graph);
 }

@@ -70,11 +70,12 @@ AstDeclarationNode *newAstDeclarationNode(AstNode *node, char *name, AstDeclarat
     return declaration;
 }
 
-AstPrintNode *newAstPrintNode(AstNode * node){
-   AstPrintNode *new = malloc(sizeof(AstPrintNode));
-   new->type = OUTPUT_TYPE;
-   new->node = node;
-   return new;
+AstPrintNode *newAstPrintNode(AstNode *node)
+{
+    AstPrintNode *new = malloc(sizeof(AstPrintNode));
+    new->type = OUTPUT_TYPE;
+    new->node = node;
+    return new;
 }
 
 AstDefinitionNode *newAstDefinitionNode(AstNode *node, char *name, AstDeclarationType dataType)
@@ -178,15 +179,88 @@ AstNumericExpressionNode *newAstNumericExpressionNode(int value)
     return new;
 }
 
-AstIdNode * newAstIdNode(char * name,AstDeclarationType type){
-    AstIdNode * new = malloc(sizeof(AstIdNode));
+AstIdNode *newAstIdNode(char *name, AstDeclarationType type)
+{
+    AstIdNode *new = malloc(sizeof(AstIdNode));
     new->type = ID_TYPE;
-    int i = strnlen(name,MAX_STRING_LENGTH);
-    new->name = malloc((i+1) * sizeof(char));
-    strncpy(new->name,name,i+1);
+    int i = strnlen(name, MAX_STRING_LENGTH);
+    new->name = malloc((i + 1) * sizeof(char));
+    strncpy(new->name, name, i + 1);
     new->declarationType = type;
     return new;
 }
+
+AstGraphNodeDeclarationNode *newAstGraphNodeDeclarationNode(char *name, AstGraphNodeDeclarationNode *next, AstNode *node)
+{
+    AstGraphNodeDeclarationNode *new = malloc(sizeof(AstGraphNodeDeclarationNode));
+    new->type = GRAPH_NODE_DECLARATION_TYPE;
+    int len = strnlen(name, MAX_STRING_LENGTH);
+    new->name = malloc((len + 1) * sizeof(char));
+    strncpy(new->name, name, len + 1);
+    new->next = next;
+    new->value = node;
+    return new;
+}
+
+AstGraphEdgeDeclarationNode *newAstGraphEdgeDeclarationNode(char *leftNode, char *rightNode, AstNode *value)
+{
+    AstGraphEdgeDeclarationNode *new = malloc(sizeof(AstGraphEdgeDeclarationNode));
+    int len1 = strnlen(leftNode, MAX_STRING_LENGTH);
+    int len2 = strnlen(rightNode, MAX_STRING_LENGTH);
+    new->leftNode = malloc(sizeof(char) * (len1 + 1));
+    new->rightNode = malloc(sizeof(char) * (len2 + 1));
+    strncpy(new->leftNode, leftNode, len1 + 1);
+    strncpy(new->rightNode, rightNode, len2 + 1);
+    new->type=GRAPH_EDGE_DECLARATION_TYPE;
+    new->value = value;
+    return new;
+}
+
+AstGraphNodeForeachNode * newAstGraphNodeForeachNode(AstBlockcodeNode * blockcode) {
+    AstGraphNodeForeachNode * new = malloc(sizeof(AstGraphNodeForeachNode));
+    new->type = FOREACH_NODE_DECLARATION_TYPE;
+    new->blockcode = blockcode;
+    new->blockcode->type = FOREACH_NODE_BLOCKCODE_TYPE;
+    return new;
+}
+
+AstGraphEdgeForeachNode * newAstGraphEdgeForeachNode(AstBlockcodeNode * blockcode,char * nodeName){
+    AstGraphEdgeForeachNode * new = malloc(sizeof(AstGraphEdgeForeachNode));
+    int len = strnlen(nodeName, MAX_STRING_LENGTH);
+    new->type = FOREACH_EDGE_DECLARATION_TYPE;
+    new->nodeName = malloc((len+1) * sizeof(char));
+    strncpy(new->nodeName, nodeName,len + 1);
+    new->blockcode = blockcode;
+    return new;
+}
+
+AstGraphActionNode * newAstGraphActionNode(char * nodeName,AstIdNode * property){
+    AstGraphActionNode * new = malloc(sizeof(AstGraphActionNode));
+    new->type = GRAPH_NODE_ACTION_TYPE;
+    int len = strnlen(nodeName, MAX_STRING_LENGTH);
+    new->nodeName = malloc((len+1) * sizeof(char));
+    strncpy(new->nodeName, nodeName,+len +1);
+    new->property = property;
+    return new;
+}
+
+AstEdgeRemoveNode * newAstEdgeRemoveNode(char * leftNode,char * rightNode){
+    AstEdgeRemoveNode * new = malloc(sizeof(AstEdgeRemoveNode));
+    new->type = GRAPH_EDGE_REMOVE_TYPE;
+    int len1,len2;
+    len1 = strnlen(leftNode, MAX_STRING_LENGTH);
+    len2 = strnlen(rightNode,MAX_STRING_LENGTH);
+    new->leftNode = malloc((len1+1) * sizeof(char));
+    new->rightNode = malloc((len2+1) * sizeof(char));
+    strncpy(new->leftNode, leftNode,len1+1);
+    strncpy(new->rightNode, rightNode,len2 + 1);
+    return new;
+}
+AstNodeRemoveNode * newAstNodeRemoveNode(char * nodeName){
+    
+}
+
+
 
 void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode *node)
 {
@@ -195,14 +269,16 @@ void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode *node)
         freeAstArithmeticExpressionNode(node->right);
         free(node->op);
         freeAstArithmeticExpressionNode(node->left);
-    }else{
+    }
+    else
+    {
         switch (node->value->type)
         {
         case NUMERIC_TYPE:
             freeAstNumericExpressionNode((AstNumericExpressionNode *)node->value);
             break;
         case ID_TYPE:
-            freeAstIdNode((AstIdNode *) node->value);
+            freeAstIdNode((AstIdNode *)node->value);
         default:
             break;
         }
@@ -242,7 +318,7 @@ void freeAstBooleanExpressionNode(AstBooleanExpressionNode *node)
             freeAstNumericExpressionNode((AstNumericExpressionNode *)node->value);
             break;
         case ID_TYPE:
-            freeAstIdNode((AstIdNode *) node->value);
+            freeAstIdNode((AstIdNode *)node->value);
         default:
             break;
         }
@@ -316,7 +392,29 @@ void freeAstNodeList(AstNodeList *node)
                 freeAstForNode((AstForNode *)it->current);
                 break;
             case OUTPUT_TYPE:
-                freeAstPrintNode((AstPrintNode *) it->current);
+                freeAstPrintNode((AstPrintNode *)it->current);
+                break;
+            case GRAPH_NODE_DECLARATION_TYPE:
+                freeAstGraphNodeDeclarationNode((AstGraphNodeDeclarationNode *)it->current);
+                break;
+            case GRAPH_EDGE_DECLARATION_TYPE:
+                freeAstGraphEdgeDeclarationNode((AstGraphEdgeDeclarationNode *) it->current);
+                break;
+            case FOREACH_NODE_DECLARATION_TYPE:
+                freeAstGraphNodeForeachNode((AstGraphNodeForeachNode *) it->current);
+                break;
+            case FOREACH_EDGE_DECLARATION_TYPE:
+                freeAstGraphEdgeForeachNode((AstGraphEdgeForeachNode *) it->current);
+                break;
+            case GRAPH_NODE_ACTION_TYPE:
+                freeAstGraphActionNode((AstGraphActionNode *) it->current);
+                break;
+            case  GRAPH_EDGE_REMOVE_TYPE:
+                freeAstEdgeRemoveNode((AstEdgeRemoveNode * ) it->current);
+                break;
+            case GRAPH_NODE_REMOVE_TYPE:
+                freeAstNodeRemoveNode((AstNodeRemoveNode *) it->current);
+                break;
             }
             curr = it;
             it = it->next;
@@ -348,7 +446,8 @@ void freeAstBlockcodeNode(AstBlockcodeNode *node)
     freeAstCodeNode(node->code);
     free(node);
 }
-void freeAstIdNode(AstIdNode * node){
+void freeAstIdNode(AstIdNode *node)
+{
     free(node->name);
     free(node);
 }
@@ -369,14 +468,15 @@ void freeAstGraphNode(AstGraphNode *node)
     free(node);
 }
 
-void freeAstPrintNode(AstPrintNode * node) {
+void freeAstPrintNode(AstPrintNode *node)
+{
     switch (node->node->type)
     {
     case NUMERIC_TYPE:
-        freeAstNumericExpressionNode((AstNumericExpressionNode *) node->node);
+        freeAstNumericExpressionNode((AstNumericExpressionNode *)node->node);
         break;
     case ID_TYPE:
-        freeAstIdNode((AstIdNode *) node->node);
+        freeAstIdNode((AstIdNode *)node->node);
         break;
     case CONSTANT_STRING_TYPE:
         freeAstConstantExpressionNode((AstConstantExpressionNode *)node->node);
@@ -385,4 +485,79 @@ void freeAstPrintNode(AstPrintNode * node) {
         break;
     }
     free(node);
+}
+
+void freeAstGraphNodeDeclarationNode(AstGraphNodeDeclarationNode *node)
+{
+    free(node->name);
+    if (node->value != NULL)
+    {
+        switch (node->value->type)
+        {
+        case CONSTANT_STRING_TYPE:
+            freeAstConstantExpressionNode((AstConstantExpressionNode *)node->value);
+            break;
+        case ID_TYPE:
+            freeAstIdNode((AstIdNode *)node->value);
+            break;
+        default:
+            break;
+        }
+    }
+    else
+    {
+        perror("Somthing went wrong...");
+    }
+    if (node->next != NULL)
+        freeAstGraphNodeDeclarationNode(node->next);
+    free(node);
+}
+
+void freeAstGraphEdgeDeclarationNode(AstGraphEdgeDeclarationNode *node)
+{
+    free(node->leftNode);
+    free(node->rightNode);
+    switch (node->value->type)
+    {
+    case NUMERIC_TYPE:
+        freeAstNumericExpressionNode((AstNumericExpressionNode *)node->value);
+        break;
+    case ID_TYPE:
+        freeAstIdNode((AstIdNode *)node->value);
+        break;
+    case CONSTANT_STRING_TYPE:
+        freeAstConstantExpressionNode((AstConstantExpressionNode *)node->value);
+        break;
+    default:
+        break;
+    }
+    free(node);
+}
+
+void freeAstGraphNodeForeachNode(AstGraphNodeForeachNode *node){
+    freeAstBlockcodeNode(node->blockcode);
+    free(node);
+}
+
+void freeAstGraphEdgeForeachNode(AstGraphEdgeForeachNode * node){
+    freeAstBlockcodeNode(node->blockcode);
+    free(node->nodeName);
+    free(node);
+}
+
+void freeAstGraphActionNode(AstGraphActionNode * node) {
+    free(node->nodeName);
+    freeAstIdNode(node->property);
+    free(node);
+}
+
+void freeAstEdgeRemoveNode(AstEdgeRemoveNode * node){
+    free(node->leftNode);
+    free(node->rightNode);
+    free(node);
+}
+
+void freeAstNodeRemoveNode(AstNodeRemoveNode * node){
+    free(node->nodeName);
+    free(node);    
 }

@@ -5,6 +5,8 @@
 typedef enum {
     GRAPH_TYPE,
     BLOCKCODE_TYPE,
+    FOREACH_NODE_BLOCKCODE_TYPE,
+    FOREACH_EDGE_BLOCKCODE_TYPE,
     CODE_TYPE,
     FOR_TYPE,
     IF_TYPE,
@@ -18,6 +20,13 @@ typedef enum {
     BOOLEAN_EXP_TYPE,
     OUTPUT_TYPE,
     ID_TYPE,
+    GRAPH_NODE_DECLARATION_TYPE,
+    GRAPH_EDGE_DECLARATION_TYPE,
+    FOREACH_NODE_DECLARATION_TYPE,
+    FOREACH_EDGE_DECLARATION_TYPE,
+    GRAPH_NODE_ACTION_TYPE,
+    GRAPH_EDGE_REMOVE_TYPE,
+    GRAPH_NODE_REMOVE_TYPE
 } AstNodeType;
 
 typedef struct AstNode {
@@ -33,7 +42,7 @@ typedef struct AstNodeList{
 
 typedef struct AstCodeNode{ //Esta es la wrapper de la lista.
     AstNodeType type;
-    AstNodeList * statements; // int a=5;string hola;
+    AstNodeList * statements;
     AstNodeList * lastStatement;
 }AstCodeNode;
 
@@ -75,7 +84,8 @@ typedef struct AstForNode{
 typedef enum {
     INT_DECLARATION_TYPE,
     STRING_DECLARATION_TYPE,
-    INPUT_DECLARATION_TYPE
+    INPUT_DECLARATION_TYPE,
+    NODE_DECLARATION_TYPE
 } AstDeclarationType;
 
 typedef struct AstIdNode{
@@ -127,6 +137,48 @@ typedef struct AstDefinitionNode {
     AstConstantExpressionNode * str;
 }AstDefinitionNode;
 
+typedef struct AstGraphNodeDeclarationNode{
+    AstNodeType type;
+    char * name;
+    struct AstGraphNodeDeclarationNode * next;
+    AstNode * value;
+}AstGraphNodeDeclarationNode;
+
+typedef struct AstGraphEdgeDeclarationNode{
+    AstNodeType type;
+    char *leftNode;
+    char *rightNode;
+    AstNode * value;    
+}AstGraphEdgeDeclarationNode;
+
+typedef struct AstGraphNodeForeachNode{
+    AstNodeType type;
+    AstBlockcodeNode * blockcode;
+}AstGraphNodeForeachNode;
+
+typedef struct AstGraphEdgeForeachNode{
+    AstNodeType type;
+    AstBlockcodeNode * blockcode;
+    char * nodeName;
+}AstGraphEdgeForeachNode;
+
+typedef struct AstGraphActionNode{
+    AstNodeType type;
+    char * nodeName;
+    AstIdNode * property;
+}AstGraphActionNode;
+
+typedef struct AstEdgeRemoveNode{
+    AstNodeType type;
+    char * leftNode;
+    char * rightNode;
+}AstEdgeRemoveNode;
+
+typedef struct AstNodeRemoveNode{
+    AstNodeType type;
+    char * nodeName;
+}AstNodeRemoveNode;
+
 AstGraphNode * newAstGraphNode(AstBlockcodeNode * node);
 AstBlockcodeNode * newAstBlockcodeNode(AstCodeNode * node);
 AstCodeNode *newAstCodeNode(AstNode *current, AstCodeNode *code);
@@ -141,6 +193,13 @@ AstDefinitionNode * newAstDefinitionNode(AstNode * node,char * name, AstDeclarat
 AstNumericExpressionNode * newAstNumericExpressionNode( int value);
 AstIdNode * newAstIdNode(char * name,AstDeclarationType type);
 AstPrintNode *newAstPrintNode(AstNode * node);
+AstGraphEdgeDeclarationNode *newAstGraphEdgeDeclarationNode(char * leftNode,char * rightNode, AstNode * value);
+AstGraphNodeDeclarationNode * newAstGraphNodeDeclarationNode(char * name, AstGraphNodeDeclarationNode * next, AstNode * node);
+AstGraphNodeForeachNode * newAstGraphNodeForeachNode(AstBlockcodeNode * blockcode);
+AstGraphEdgeForeachNode * newAstGraphEdgeForeachNode(AstBlockcodeNode * blockcode,char * nodeName);
+AstGraphActionNode * newAstGraphActionNode(char * nodeName,AstIdNode * property);
+AstEdgeRemoveNode * newAstEdgeRemoveNode(char * leftNode,char * rightNode);
+AstNodeRemoveNode * newAstNodeRemoveNode(char * nodeName);
 void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode * node);
 void freeAstConstantExpressionNode(AstConstantExpressionNode * node);
 void freeAstBooleanExpressionNode(AstBooleanExpressionNode * node);
@@ -155,4 +214,11 @@ void freeAstForNode(AstForNode * node);
 void freeAstNumericExpressionNode(AstNumericExpressionNode *node);
 void freeAstIdNode(AstIdNode * node);
 void freeAstPrintNode(AstPrintNode * node);
+void freeAstGraphNodeDeclarationNode(AstGraphNodeDeclarationNode * node);
+void freeAstGraphEdgeDeclarationNode(AstGraphEdgeDeclarationNode * node);
+void freeAstGraphNodeForeachNode(AstGraphNodeForeachNode * node);
+void freeAstGraphEdgeForeachNode(AstGraphEdgeForeachNode * node);
+void freeAstGraphActionNode(AstGraphActionNode * node);
+void freeAstEdgeRemoveNode(AstEdgeRemoveNode * node);
+void freeAstNodeRemoveNode(AstNodeRemoveNode * node);
 #endif
