@@ -13,6 +13,7 @@
     int yylex_destroy();
     ScopeTable * scopeTable;
     AstGraphNode * entrypoint;
+    char c;
 %}
 %start program
 %union {struct AstNode * node;int num; char * string;}
@@ -25,12 +26,17 @@
 %token <string> BINARY_BOOL_OPERATOR
 %token <string> UNARY_BOOL_OPERATOR
 %token <string> INPUT OUTPUT
+%token <string> NODE
 %left OPERATOR BINARY_BOOL_OPERATOR UNARY_BOOL_OPERATOR
 %type <node> blockcode code declaration exp boolExp conditional conditionalElse forLoop definition
-%type <node> term forBlockcode
+%type <node> term forBlockcode output
 %%
-program:        GRAPH '(' ')' blockcode     {entrypoint = newAstGraphNode((AstBlockcodeNode *)$4); return 1;}
+program:        GRAPH '(' graphType ')' blockcode     {entrypoint = newAstGraphNode((AstBlockcodeNode *)$5); return 1;}
                 ;
+graphType:      STRING                                {c = 's';}
+                |   
+                INT                                   {c = 'i';}
+;
 blockcode:      '{' { pushScope(scopeTable); } code '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$3);popScope(scopeTable);}
                 ;
 code:           ';'                         {$$ = (AstNode *) newAstCodeNode((AstNode *)NULL,(AstCodeNode *)NULL);}
@@ -42,6 +48,8 @@ code:           ';'                         {$$ = (AstNode *) newAstCodeNode((As
                 code forLoop                {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                 code definition ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                |
+                code output ';'             {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                                             {$$ = (AstNode *) NULL;}
 ;
@@ -81,6 +89,15 @@ declaration:    INT ID                      {
                                                 free($2);
                                                 free($4);
                                             }
+                |
+                STRING ID '=' INPUT'(' ')'  {
+                                                if(findSymbol(scopeTable,$2)){
+                                                        yyerror("Cannot redeclare variable");
+                                                }else
+                                                    addSymbol(scopeTable,$2,INPUT_DECLARATION_TYPE);
+                                                $$ = (AstNode *) newAstDeclarationNode((AstNode *)NULL,$2,INPUT_DECLARATION_TYPE);
+                                                free($2);
+                                            } 
 ;
 definition:     ID '=' exp                  {
                                                 Symbol * symbol;
@@ -96,11 +113,22 @@ definition:     ID '=' exp                  {
                 ID '=' STRING_VALUE         {
                                                 Symbol * symbol;
                                                 if((symbol=findSymbol(scopeTable,$1)) != NULL){
-                                                    if(symbol->dataType != STRING_DECLARATION_TYPE)
+                                                    if(symbol->dataType == INT_DECLARATION_TYPE)
                                                         yyerror("Invalid definition data type");
                                                 }else
                                                     yyerror("undeclared variable");
                                                 $$ = (AstNode *) newAstDefinitionNode((AstNode *)newAstConstantExpressionNode($3),$1,STRING_DECLARATION_TYPE);
+                                                free($1);
+                                            }
+                |
+                ID '=' INPUT'(' ')'         {
+                                                Symbol * symbol;
+                                                if((symbol=findSymbol(scopeTable,$1)) != NULL){
+                                                    if(symbol->dataType == INT_DECLARATION_TYPE)
+                                                        yyerror("Invalid definition data type");
+                                                }else
+                                                    yyerror("undeclared variable");
+                                                $$ = (AstNode *) newAstDefinitionNode((AstNode *)NULL,$1,INPUT_DECLARATION_TYPE);
                                                 free($1);
                                             }
 ;
@@ -133,14 +161,18 @@ boolExp:        term                              {$$ = (AstNode *) newAstBoolea
                 |
                 UNARY_BOOL_OPERATOR boolExp       {$$ = (AstNode *) newAstBooleanExpressionNode(NULL,(AstBooleanExpressionNode *)$2,$1,0);free($1);}
 ;
-//output:         OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintNode((newAstConstantExpressionNode *)$3);free($3);}
-//                |
-//                OUTPUT '(' term ')'                 {$$ = (AstNode *) newAstPrintNode((newAstConstantExpressionNode *)$3)->}
-;              
+output:         OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintNode((AstNode *)newAstConstantExpressionNode($3));free($3);}
+                |
+                OUTPUT '(' term ')'                 {
+                                                        AstNode * node = $3;
+                                                        $$ = (AstNode *) newAstPrintNode(node);
+                                                    }
+;   
 forLoop:        FOR '(' {pushScope(scopeTable);} declaration ';'  boolExp ';' definition ')' forBlockcode {$$ = (AstNode *)newAstForNode((AstDeclarationNode *)$4,(AstBooleanExpressionNode *)$6,(AstDefinitionNode *)$8,(AstBlockcodeNode *)$10);}
 ;
 forBlockcode:      '{' code '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$2);popScope(scopeTable);}
 ;
+
 %%
 
 

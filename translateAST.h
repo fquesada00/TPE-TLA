@@ -14,4 +14,6 @@ void translateAstDefinitionNode(AstDefinitionNode * node);
 void translateAstForNode(AstForNode * node);
 void translateAstNumericExpressionNode(AstNumericExpressionNode * node);
 void translateAstForDefinitionNode(AstDefinitionNode * node);
+void translateAstPrintNode(AstPrintNode * node);
+void translateInput(char * name);
 #endif

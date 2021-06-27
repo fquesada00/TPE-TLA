@@ -60,6 +60,7 @@ AstDeclarationNode *newAstDeclarationNode(AstNode *node, char *name, AstDeclarat
     case INT_DECLARATION_TYPE:
         declaration->exp = (AstArithmeticExpressionNode *)node;
         break;
+    case INPUT_DECLARATION_TYPE:
     case STRING_DECLARATION_TYPE:
         declaration->str = (AstConstantExpressionNode *)node;
         break;
@@ -69,23 +70,13 @@ AstDeclarationNode *newAstDeclarationNode(AstNode *node, char *name, AstDeclarat
     return declaration;
 }
 
-//AstPrintNode *newAstPrintNode(char *printString){
-//    AstPrintNode *new = malloc(sizeof(AstPrintNode));
-//    new->type = OUTPUT_TYPE;
-//    size_t length = strlen(printString);
-//    new->string = malloc(sizeof(char)*length+1);
-//    strncpy(new->string,printString,length);
-//    new->string[length] = 0;
-//}
+AstPrintNode *newAstPrintNode(AstNode * node){
+   AstPrintNode *new = malloc(sizeof(AstPrintNode));
+   new->type = OUTPUT_TYPE;
+   new->node = node;
+   return new;
+}
 
-/*AstGetNode *newAstGetNode(char *getString){
-    AstGetNode *new = malloc(sizeof(AstGetNode));
-    new->type = INPUT_TYPE;
-        size_t length = strlen(getString);
-    new->string = malloc(sizeof(char)*length+1);
-    strncpy(new->string,getString,length);
-    new->string[length] = 0;
-}*/
 AstDefinitionNode *newAstDefinitionNode(AstNode *node, char *name, AstDeclarationType dataType)
 {
     AstDefinitionNode *definition = malloc(sizeof(AstDefinitionNode));
@@ -96,6 +87,7 @@ AstDefinitionNode *newAstDefinitionNode(AstNode *node, char *name, AstDeclaratio
     case INT_DECLARATION_TYPE:
         definition->exp = (AstArithmeticExpressionNode *)node;
         break;
+    case INPUT_DECLARATION_TYPE:
     case STRING_DECLARATION_TYPE:
         definition->str = (AstConstantExpressionNode *)node;
         break;
@@ -266,6 +258,7 @@ void freeAstDeclarationNode(AstDeclarationNode *node)
         if (node->exp != NULL)
             freeAstArithmeticExpressionNode(node->exp);
         break;
+    case INPUT_DECLARATION_TYPE:
     case STRING_DECLARATION_TYPE:
         if (node->str != NULL)
             freeAstConstantExpressionNode(node->str);
@@ -283,6 +276,7 @@ void freeAstDefinitionNode(AstDefinitionNode *node)
         if (node->exp != NULL)
             freeAstArithmeticExpressionNode(node->exp);
         break;
+    case INPUT_DECLARATION_TYPE:
     case STRING_DECLARATION_TYPE:
         if (node->str != NULL)
             freeAstConstantExpressionNode(node->str);
@@ -321,6 +315,8 @@ void freeAstNodeList(AstNodeList *node)
             case FOR_TYPE:
                 freeAstForNode((AstForNode *)it->current);
                 break;
+            case OUTPUT_TYPE:
+                freeAstPrintNode((AstPrintNode *) it->current);
             }
             curr = it;
             it = it->next;
@@ -370,5 +366,23 @@ void freeAstIfNode(AstIfNode *node)
 void freeAstGraphNode(AstGraphNode *node)
 {
     freeAstBlockcodeNode(node->blockcode);
+    free(node);
+}
+
+void freeAstPrintNode(AstPrintNode * node) {
+    switch (node->node->type)
+    {
+    case NUMERIC_TYPE:
+        freeAstNumericExpressionNode((AstNumericExpressionNode *) node->node);
+        break;
+    case ID_TYPE:
+        freeAstIdNode((AstIdNode *) node->node);
+        break;
+    case CONSTANT_STRING_TYPE:
+        freeAstConstantExpressionNode((AstConstantExpressionNode *)node->node);
+        break;
+    default:
+        break;
+    }
     free(node);
 }

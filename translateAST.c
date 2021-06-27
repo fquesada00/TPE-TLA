@@ -49,14 +49,6 @@ void translateAstIfNode(AstIfNode * node){
         translateAstIfNode(node->next);  
 }
 
-//void translateAstPrintNode(AstPrintNode * node){
-//    printf("printf(\"%s);\n",node->string);
-//}
-
-//void translateAstGetNode(AstGetNode * node){
-//    printf("char 
-//}
-
 void translateAstNodeList(AstNodeList * node){
     AstNodeList * it = node; 
     while(it != NULL){
@@ -73,9 +65,9 @@ void translateAstNodeList(AstNodeList * node){
             case DECLARATION_TYPE:
                 translateAstDeclarationNode((AstDeclarationNode*) it->current);
             break;
-            //case OUTPUT_TYPE:
-            //    translateAstPrintNode((AstPrintNode*)it->current);
-            //break;
+            case OUTPUT_TYPE:
+               translateAstPrintNode((AstPrintNode*)it->current);
+            break;
             //case INPUT_TYPE
             //    translateAstGetNode((AstGetNode*)it->current);
             case DEFINITION_TYPE:
@@ -104,6 +96,9 @@ void translateAstDeclarationNode(AstDeclarationNode * node){
             translateAstConstantNode((AstConstantExpressionNode *)node->str);
         }
         break;
+    case INPUT_DECLARATION_TYPE:
+        printf("char * %s = ", node->name);
+        translateInput(node->name);
     }
     printf(";");
 
@@ -119,6 +114,9 @@ void translateAstForDefinitionNode(AstDefinitionNode * node){
     case STRING_DECLARATION_TYPE:
         translateAstConstantNode((AstConstantExpressionNode *) node->str);
         break;
+    case INPUT_DECLARATION_TYPE:
+        translateInput(node->name);
+        break;
     default:
         break;
     }
@@ -129,6 +127,10 @@ void translateAstDefinitionNode(AstDefinitionNode * node) {
     printf(";");
 }
 
+void translateInput(char * name){
+    printf("malloc(MAX_INPUT_SIZE*sizeof(char));\n");
+    printf("fgets(%s, MAX_INPUT_SIZE, stdin)", name);
+}
 
 void translateAstConstantNode(AstConstantExpressionNode * node){
     printf("%s",node->stringValue);
@@ -191,4 +193,37 @@ void translateAstBooleanExpressionNode(AstBooleanExpressionNode * node) {
     translateAstBooleanExpressionNode(node->left);
     printf(" %s ",node->op);
     translateAstBooleanExpressionNode(node->right);
+}
+
+void translateAstPrintNode(AstPrintNode * node) {
+    printf("printf(");
+    AstIdNode * n;
+    switch (node->node->type)
+    {
+    case NUMERIC_TYPE:
+        printf("\"%%d\",");
+        printf("%d", ((AstNumericExpressionNode *) node->node)->value);
+        break;
+    case ID_TYPE:
+        n = (AstIdNode *) node->node;
+        switch (n->declarationType)
+        {
+        case INT_DECLARATION_TYPE:
+            printf("\"%%d\",");
+            break;
+        case INPUT_DECLARATION_TYPE:
+        case STRING_DECLARATION_TYPE:
+            printf("\"%%s\",");
+            break;
+        default:
+            break;
+        }
+        printf("%s", n->name);
+        break;
+    case CONSTANT_STRING_TYPE:
+        printf("%s", ((AstConstantExpressionNode *)node->node)->stringValue);
+    default:
+        break;
+    }
+    printf(");");
 }

@@ -16,9 +16,8 @@ typedef enum {
     NODE_LIST_TYPE,
     ARITHMETIC_EXP_TYPE,
     BOOLEAN_EXP_TYPE,
-    INPUT_TYPE,
     OUTPUT_TYPE,
-    ID_TYPE
+    ID_TYPE,
 } AstNodeType;
 
 typedef struct AstNode {
@@ -57,12 +56,12 @@ typedef struct AstIfNode {
 
 typedef struct AstPrintNode {
     AstNodeType type;
-    char * string;   
+    AstNode * node;
 } AstPrintNode;
 
 typedef struct AstGetNode {
     AstNodeType type;
-    char * string;
+    AstNode * node;
 }AstGetNode;
 
 typedef struct AstForNode{
@@ -75,7 +74,8 @@ typedef struct AstForNode{
 
 typedef enum {
     INT_DECLARATION_TYPE,
-    STRING_DECLARATION_TYPE
+    STRING_DECLARATION_TYPE,
+    INPUT_DECLARATION_TYPE
 } AstDeclarationType;
 
 typedef struct AstIdNode{
@@ -140,6 +140,7 @@ AstConstantExpressionNode * newAstConstantExpressionNode(char * stringValue);
 AstDefinitionNode * newAstDefinitionNode(AstNode * node,char * name, AstDeclarationType dataType);
 AstNumericExpressionNode * newAstNumericExpressionNode( int value);
 AstIdNode * newAstIdNode(char * name,AstDeclarationType type);
+AstPrintNode *newAstPrintNode(AstNode * node);
 void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode * node);
 void freeAstConstantExpressionNode(AstConstantExpressionNode * node);
 void freeAstBooleanExpressionNode(AstBooleanExpressionNode * node);
@@ -153,4 +154,5 @@ void freeAstCodeNode(AstCodeNode * node);
 void freeAstForNode(AstForNode * node);
 void freeAstNumericExpressionNode(AstNumericExpressionNode *node);
 void freeAstIdNode(AstIdNode * node);
+void freeAstPrintNode(AstPrintNode * node);
 #endif
