@@ -1,0 +1,36 @@
+graph(){
+   int a = 1;
+   int b = 0;
+   if(b) {
+       output("no deberia entrar aca);
+   }
+   else-if(a) {
+       output(aca si quiero entrar);
+   }
+   a = 0;
+   if(a) {
+       output("aca tampoco quiero entrar);
+   }
+   else-if(!a) {
+       output("anda el !");
+   }
+   a = 1;
+   if (a && b) {
+       output("no anda el and");
+   }
+   else-if(b || a) {
+       output("si anda el or");
+   }
+
+   a = 7;
+   if(a > 10) {
+       output("no anda el mayor");
+   }
+   else-if(a > 8) {
+       output("no anda el mayor");
+   }
+   else-if(a < 8) {
+       output("andan el menor y el else-if");
+   }
+
+}
