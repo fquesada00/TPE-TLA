@@ -10,8 +10,8 @@ void translateMainBlockcode(AstBlockcodeNode *node)
 {
     printf("{\n");
     printf("Graph * graph = newGraph();\n");
-    printf("GraphNode * nodeIterator;\n");
-    printf("GraphEdge * edgeIterator;\n");
+    printf("GraphNode * nodeIterator = NULL;\n");
+    printf("GraphEdge * edgeIterator = NULL;\n");
     translateAstCodeNode(node->code);
     printf("}");
 }
@@ -21,11 +21,19 @@ void translateAstGraphNode(AstGraphNode *node)
     int graphLib = open("./graph.c",O_RDONLY);
     char BUFFER[1024 + 1] = {0};
     int size = 0;
+    printf("\n// #---------------------------------------------#\n");
+    printf("// \tC-Graph compiler - 2021 - 1Q - TLAC\n");
+    printf("// \tA compiler to parse .cg files, a graph oriented programming language\n//\n//\n");
+    printf("// \tCreated by:\n");
+    printf("// \t\t- Gaston Donikian\n//\t\t- Francisco Quesada\n//\t\t- Octavio Serpe\n//\t\t- Segundo Espina\n");
+    printf("// #---------------------------------------------#\n");
+    printf("#define MAX_INPUT_SIZE 256\n");
+    fflush(stdout);
     while((size = read(graphLib,BUFFER,1024)) != 0){
         write(1,BUFFER,size);
     }
     close(graphLib);
-    printf("int main()");
+    printf("\nint main()");
     translateMainBlockcode(node->blockcode);
     freeAstGraphNode(node);
 }
@@ -276,6 +284,7 @@ void translateAstPrintNode(AstPrintNode *node)
 {
     printf("printf");
     AstIdNode *n;
+    AstGraphActionNode * action;
     switch (node->node->type)
     {
     case NUMERIC_TYPE:
@@ -306,7 +315,7 @@ void translateAstPrintNode(AstPrintNode *node)
         printf("(%s", ((AstConstantExpressionNode *)node->node)->stringValue);
         break;
     case GRAPH_NODE_ACTION_TYPE:
-        AstGraphActionNode * action = (AstGraphActionNode *)node->node;
+        action = (AstGraphActionNode *)node->node;
         switch (action->property->declarationType){
             case INT_DECLARATION_TYPE:
                 printf("(\"%%d\",");

@@ -446,7 +446,6 @@ forLoop:        FOR '(' {pushScope(scopeTable);} declaration ';'  boolExp ';' de
 ;
 forBlockcode:      '{' code '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$2);popScope(scopeTable);}
 ;
-    // traverse(graph with bfs starting node0)
 traverseGraphNode:  TRAVERSE '(' GRAPH WITH traverseProcedure STARTING nodeField ')'   {
                                                                                         $$ = (AstNode *) newAstTraverseNode($7, (AstTraverseProcedureNode *) $5);
                                                                                         free($7);
