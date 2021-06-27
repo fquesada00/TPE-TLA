@@ -438,15 +438,18 @@ outputEdge:     OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintN
                                                     $$ = (AstNode *) newAstPrintNode((AstNode*)$3);
                                                 }
                 |
-                 OUTPUT '(' EDGE_ITERATOR ')'     {
+                 OUTPUT '(' EDGE_ITERATOR edgeProperty  ')'     {
                                                     $$ = (AstNode *) newAstPrintNode((AstNode*)newAstGraphActionNode("edgeIterator",newAstIdNode("weight",EDGE_DECLARATION_TYPE)));
-                                                }  
+                                                }   
 ;
+edgeProperty:   EDGE_WEIGHT                    
+                |
+                                            
+;                                        
 forLoop:        FOR '(' {pushScope(scopeTable);} declaration ';'  boolExp ';' definition ')' forBlockcode {$$ = (AstNode *)newAstForNode((AstDeclarationNode *)$4,(AstBooleanExpressionNode *)$6,(AstDefinitionNode *)$8,(AstBlockcodeNode *)$10);}
 ;
 forBlockcode:      '{' code '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$2);popScope(scopeTable);}
 ;
-    // traverse(graph with bfs starting node0)
 traverseGraphNode:  TRAVERSE '(' GRAPH WITH traverseProcedure STARTING nodeField ')'   {
                                                                                         $$ = (AstNode *) newAstTraverseNode($7, (AstTraverseProcedureNode *) $5);
                                                                                         free($7);

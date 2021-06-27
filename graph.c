@@ -308,7 +308,6 @@ void freeGraph(Graph *graph)
 }
 
 void printfEdge(GraphEdge * edge){
-    printf("edge weight: ");
     switch(edge->type){
         case STRING_EDGE:
             printf("%s",(char *) edge->weight);
