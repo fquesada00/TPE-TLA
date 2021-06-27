@@ -12,7 +12,8 @@ ascii-printables [ -!#-~]{1,256}
 ignore [ \t\n]+
 entrypoint graph
 %% 
---/->                     {return REMOVE_ADJACENCY;}
+--\/->                     {return REMOVE_ADJACENCY;}
+\/>                        {return REMOVE_NODE;}
 ->                        {yylval.string = strdup(yytext); return END_ARROW;}
 --                        {yylval.string = strdup(yytext);return START_ARROW;}
 (==|!=|>=|<=|>|<|&&|\|\|) {yylval.string = strdup(yytext);return BINARY_BOOL_OPERATOR;}
@@ -35,6 +36,11 @@ foreach                   {return FOREACH;}
 \.weight                  {return EDGE_WEIGHT;}
 Node                      {return NODE;}
 in                        {yylval.string = strdup(yytext);return IN;}
+traverse                  {return TRAVERSE;}
+starting                  {return STARTING;}
+with                      {return WITH;}
+dfs                       {return DFS;}
+bfs                       {return BFS;}
 {entrypoint}              {return GRAPH;}
 \"{ascii-printables}\"    {yylval.string = strdup(yytext);return STRING_VALUE;}
 {alpha}                   {yylval.string = strdup(yytext);return ID;}

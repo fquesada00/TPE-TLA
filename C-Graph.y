@@ -22,22 +22,24 @@
 
 %token <string> ID STRING_VALUE ELSE_IF IF ELSE FOR
 %token <num> NUMBER
-%token INT STRING
+%token INT STRING BFS DFS
 %token <string> OPERATOR 
 %token <string> BINARY_BOOL_OPERATOR
 %token <string> UNARY_BOOL_OPERATOR
 %token <string> INPUT OUTPUT
 %token <string> NODE NODE_VALUE NODE_ID
-%token <string> START_ARROW END_ARROW REMOVE_ADJACENCY;
+%token <string> START_ARROW END_ARROW REMOVE_ADJACENCY REMOVE_NODE
 %token <string> FOREACH NODE_ITERATOR IN EDGE_ITERATOR EDGE_WEIGHT
+%token <string> TRAVERSE WITH TRAVERSE_ROCEDURE STARTING
 %left OPERATOR BINARY_BOOL_OPERATOR UNARY_BOOL_OPERATOR
 %type <node> blockcode code declaration exp boolExp conditional conditionalElse forLoop definition
 %type <node> term forBlockcode output
 %type <node> nodeDeclaration nextNodeDeclaration nodeValue
-%type <node> adjacencyDeclaration edgeValue removeAdjacency removeGraphAdjacency
+%type <node> adjacencyDeclaration edgeValue removeAdjacency removeGraphAdjacency removeGraphNode
 %type <node> nodeBlockcode nodeCode foreachNode 
 %type <node> edgeBlockcode edgeCode foreachEdge
-%type <node> nodeAction nodeProperty graphAction edgeAction
+%type <node> nodeAction nodeProperty graphAction edgeAction outputEdge outputNode
+%type <node> traverseGraphNode traverseGraph traverseProcedure
 %type <string> nodeField
 %%
 program:        GRAPH '(' ')' blockcode     {entrypoint = newAstGraphNode((AstBlockcodeNode *)$4); return 1;}
@@ -62,11 +64,15 @@ code:           ';'                         {$$ = (AstNode *) newAstCodeNode((As
                 |
                 code removeGraphAdjacency ';'    {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
+                code removeGraphNode ';'    {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                |
                 code foreachNode            {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                 code foreachEdge            {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                 code graphAction ';'        {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                |
+                code traverseGraph ';'      {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                                             {$$ = (AstNode *) NULL;}
 ;
@@ -167,6 +173,16 @@ adjacencyDeclaration:   ID START_ARROW edgeValue END_ARROW ID       {
                                                                     }
 ;
 
+removeGraphNode:        REMOVE_NODE ID                              {
+                                                                        Symbol * symbol;
+                                                                        if((symbol = findSymbol(scopeTable,$2))==NULL){
+                                                                            yyerror("Cannot delete undeclared node");
+                                                                        }else if(symbol->dataType != NODE_DECLARATION_TYPE)
+                                                                            yyerror("Cannot delete non Node data type variable");
+                                                                        removeSymbol(scopeTable,$2);
+                                                                        $$ = (AstNode *)newAstNodeRemoveNode($2);free($2);
+                                                                    }
+;
 removeGraphAdjacency:   ID REMOVE_ADJACENCY ID                      {
 
                                                                         Symbol * left, * right;
@@ -179,7 +195,9 @@ removeGraphAdjacency:   ID REMOVE_ADJACENCY ID                      {
                                                                         if(!strncmp($1,$3,MAX_IDENTIFIER_LENGTH)){
                                                                             yyerror("Cannot remove self edge");
                                                                         }
-                                                                        $$ = NULL;
+                                                                        $$ = (AstNode*)newAstEdgeRemoveNode($1,$3);
+                                                                        free($1);
+                                                                        free($3);
                                                                                                                                     
                                                                     }
 ;
@@ -187,6 +205,10 @@ removeAdjacency:        nodeField REMOVE_ADJACENCY nodeField        {
                                                                         if(!strncmp($1,$3,MAX_IDENTIFIER_LENGTH)){
                                                                             yyerror("Cannot remove self edge");
                                                                         }
+
+                                                                        $$ = (AstNode*)newAstEdgeRemoveNode($1,$2);
+                                                                        free($1);
+                                                                        free($2);
                                                                     }
 ;
 edgeValue:              NUMBER                                      { $$ = (AstNode *) newAstNumericExpressionNode($1);}
@@ -220,7 +242,7 @@ nodeCode:       ';'                             {$$ = (AstNode *) newAstCodeNode
                 |
                 nodeCode definition ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
-                nodeCode output ';'             {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                nodeCode outputNode ';'             {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                 nodeCode foreachEdge            {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
@@ -229,6 +251,8 @@ nodeCode:       ';'                             {$$ = (AstNode *) newAstCodeNode
                 nodeCode adjacencyDeclaration ';'  {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                 nodeCode removeAdjacency ';'    {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                |
+                nodeCode traverseGraphNode ';'  {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                                                 {$$ = (AstNode *) NULL;}
 ;
@@ -280,7 +304,7 @@ edgeCode:       ';'                             {$$ = (AstNode *) newAstCodeNode
                 |
                 edgeCode definition ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
-                edgeCode output ';'             {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                edgeCode outputEdge ';'             {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                 edgeCode nodeAction ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
@@ -288,7 +312,7 @@ edgeCode:       ';'                             {$$ = (AstNode *) newAstCodeNode
                 |
                                                 {$$ = (AstNode *) NULL;}
 ;
-edgeAction:     EDGE_ITERATOR EDGE_WEIGHT       {$$ = (AstNode *) newAstGraphActionNode("edgeIterator",newAstIdNode("weight",STRING_DECLARATION_TYPE));}
+edgeAction:     EDGE_ITERATOR EDGE_WEIGHT       {$$ = (AstNode *) newAstGraphActionNode("edgeIterator",newAstIdNode("weight",EDGE_DECLARATION_TYPE));}
 ;    
 definition:     ID '=' exp                  {
                                                 Symbol * symbol;
@@ -356,16 +380,92 @@ boolExp:        term                              {$$ = (AstNode *) newAstBoolea
 ;
 output:         OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintNode((AstNode *)newAstConstantExpressionNode($3));free($3);}
                 |
-                OUTPUT '(' term ')'                 {
-                                                        AstNode * node = $3;
-                                                        $$ = (AstNode *) newAstPrintNode(node);
-                                                    }
+                OUTPUT '(' ID ')'               {
+                                                    Symbol * symbol;
+                                                    if((symbol=findSymbol(scopeTable,$3)) == NULL)
+                                                        yyerror("undeclared variable");
+                                                    AstNode * node = (AstNode *) newAstIdNode($3,symbol->dataType);
+                                                    $$ = (AstNode *) newAstPrintNode(node);
+                                                    free($3);
+                                                }
+                |
+                 OUTPUT '(' NUMBER ')'         {
+                                                    AstNode * node = (AstNode*) newAstNumericExpressionNode($3);
+                                                    $$ = (AstNode *) newAstPrintNode(node);
+                                                }
+                |
+                 OUTPUT '(' graphAction ')'     {
+                                                    $$ = (AstNode *) newAstPrintNode((AstNode*)$3);
+                                                }
 ;   
+outputNode:     OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintNode((AstNode *)newAstConstantExpressionNode($3));free($3);}
+                |
+                OUTPUT '(' ID ')'               {
+                                                    Symbol * symbol;
+                                                    if((symbol=findSymbol(scopeTable,$3)) == NULL)
+                                                        yyerror("undeclared variable");
+                                                    AstNode * node = (AstNode *) newAstIdNode($3,symbol->dataType);
+                                                    $$ = (AstNode *) newAstPrintNode(node);
+                                                    free($3);
+                                                }
+                |
+                 OUTPUT '(' NUMBER ')'         {
+                                                    AstNode * node = (AstNode*) newAstNumericExpressionNode($3);
+                                                    $$ = (AstNode *) newAstPrintNode(node);
+                                                }
+                |
+                 OUTPUT '(' nodeAction ')'     {
+                                                    $$ = (AstNode *) newAstPrintNode((AstNode*)$3);
+                                                }  
+;
+outputEdge:     OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintNode((AstNode *)newAstConstantExpressionNode($3));free($3);}
+                |
+                OUTPUT '(' ID ')'               {
+                                                    Symbol * symbol;
+                                                    if((symbol=findSymbol(scopeTable,$3)) == NULL)
+                                                        yyerror("undeclared variable");
+                                                    AstNode * node = (AstNode *) newAstIdNode($3,symbol->dataType);
+                                                    $$ = (AstNode *) newAstPrintNode(node);
+                                                    free($3);
+                                                }
+                |
+                 OUTPUT '(' NUMBER ')'         {
+                                                    AstNode * node = (AstNode*) newAstNumericExpressionNode($3);
+                                                    $$ = (AstNode *) newAstPrintNode(node);
+                                                }
+                |
+                 OUTPUT '(' nodeAction ')'     {
+                                                    $$ = (AstNode *) newAstPrintNode((AstNode*)$3);
+                                                }
+                |
+                 OUTPUT '(' EDGE_ITERATOR ')'     {
+                                                    $$ = (AstNode *) newAstPrintNode((AstNode*)newAstGraphActionNode("edgeIterator",newAstIdNode("weight",EDGE_DECLARATION_TYPE)));
+                                                }  
+;
 forLoop:        FOR '(' {pushScope(scopeTable);} declaration ';'  boolExp ';' definition ')' forBlockcode {$$ = (AstNode *)newAstForNode((AstDeclarationNode *)$4,(AstBooleanExpressionNode *)$6,(AstDefinitionNode *)$8,(AstBlockcodeNode *)$10);}
 ;
 forBlockcode:      '{' code '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$2);popScope(scopeTable);}
 ;
-
+    // traverse(graph with bfs starting node0)
+traverseGraphNode:  TRAVERSE '(' GRAPH WITH traverseProcedure STARTING nodeField ')'   {
+                                                                                        $$ = (AstNode *) newAstTraverseNode($7, (AstTraverseProcedureNode *) $5);
+                                                                                        free($7);
+                                                                                    }
+;
+traverseGraph:  TRAVERSE '(' GRAPH WITH traverseProcedure STARTING ID ')'             {
+                                                                                        Symbol * symbol;
+                                                                                        if((symbol = findSymbol(scopeTable,$7))==NULL){
+                                                                                            yyerror("Cannot iterate over undeclared node");
+                                                                                        }else if(symbol->dataType != NODE_DECLARATION_TYPE)
+                                                                                            yyerror("Cannot iterate over non Node data type variable"); 
+                                                                                        $$ = (AstNode *) newAstTraverseNode($7, (AstTraverseProcedureNode *) $5);
+                                                                                        free($7); 
+                                                                                    }
+;
+traverseProcedure:  BFS                                                             { $$ = (AstNode*) newAstTraverseProcedureNode(BFS_PROCEDURE); }
+                    |
+                    DFS                                                             { $$ = (AstNode*) newAstTraverseProcedureNode(DFS_PROCEDURE); }
+;                                                                                            
 %%
 
 

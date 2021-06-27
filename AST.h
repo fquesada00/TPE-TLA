@@ -26,7 +26,9 @@ typedef enum {
     FOREACH_EDGE_DECLARATION_TYPE,
     GRAPH_NODE_ACTION_TYPE,
     GRAPH_EDGE_REMOVE_TYPE,
-    GRAPH_NODE_REMOVE_TYPE
+    GRAPH_NODE_REMOVE_TYPE,
+    TRAVERSE_PROCEDURE_TYPE,
+    TRAVERSE_TYPE,
 } AstNodeType;
 
 typedef struct AstNode {
@@ -84,6 +86,7 @@ typedef struct AstForNode{
 typedef enum {
     INT_DECLARATION_TYPE,
     STRING_DECLARATION_TYPE,
+    EDGE_DECLARATION_TYPE,
     INPUT_DECLARATION_TYPE,
     NODE_DECLARATION_TYPE
 } AstDeclarationType;
@@ -179,6 +182,21 @@ typedef struct AstNodeRemoveNode{
     char * nodeName;
 }AstNodeRemoveNode;
 
+typedef enum {
+    BFS_PROCEDURE,
+    DFS_PROCEDURE
+} TRAVERSE_PROCEDURE;
+typedef struct AstTraverseProcedureNode{
+    AstNodeType type;
+    TRAVERSE_PROCEDURE procedure;
+}AstTraverseProcedureNode;
+
+typedef struct AstTraverseNode{
+    AstNodeType type;
+    char * nodeName;
+    AstTraverseProcedureNode * procedure;
+}AstTraverseNode;
+
 AstGraphNode * newAstGraphNode(AstBlockcodeNode * node);
 AstBlockcodeNode * newAstBlockcodeNode(AstCodeNode * node);
 AstCodeNode *newAstCodeNode(AstNode *current, AstCodeNode *code);
@@ -200,6 +218,8 @@ AstGraphEdgeForeachNode * newAstGraphEdgeForeachNode(AstBlockcodeNode * blockcod
 AstGraphActionNode * newAstGraphActionNode(char * nodeName,AstIdNode * property);
 AstEdgeRemoveNode * newAstEdgeRemoveNode(char * leftNode,char * rightNode);
 AstNodeRemoveNode * newAstNodeRemoveNode(char * nodeName);
+AstTraverseProcedureNode * newAstTraverseProcedureNode(TRAVERSE_PROCEDURE procedure);
+AstTraverseNode * newAstTraverseNode(char * nodeName, AstTraverseProcedureNode * procedure);
 void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode * node);
 void freeAstConstantExpressionNode(AstConstantExpressionNode * node);
 void freeAstBooleanExpressionNode(AstBooleanExpressionNode * node);
@@ -221,4 +241,5 @@ void freeAstGraphEdgeForeachNode(AstGraphEdgeForeachNode * node);
 void freeAstGraphActionNode(AstGraphActionNode * node);
 void freeAstEdgeRemoveNode(AstEdgeRemoveNode * node);
 void freeAstNodeRemoveNode(AstNodeRemoveNode * node);
+void freeAstTraverseNode(AstTraverseNode * procedure);
 #endif

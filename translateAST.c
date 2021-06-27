@@ -2,7 +2,10 @@
 #include "AST.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 void translateMainBlockcode(AstBlockcodeNode *node)
 {
     printf("{\n");
@@ -15,6 +18,13 @@ void translateMainBlockcode(AstBlockcodeNode *node)
 
 void translateAstGraphNode(AstGraphNode *node)
 {
+    int graphLib = open("./graph.c",O_RDONLY);
+    char BUFFER[1024 + 1] = {0};
+    int size = 0;
+    while((size = read(graphLib,BUFFER,1024)) != 0){
+        write(1,BUFFER,size);
+    }
+    close(graphLib);
     printf("int main()");
     translateMainBlockcode(node->blockcode);
     freeAstGraphNode(node);
@@ -116,6 +126,15 @@ void translateAstNodeList(AstNodeList *node)
             break;
         case GRAPH_NODE_ACTION_TYPE:
             translateAstGraphActionNode((AstGraphActionNode *) it->current);
+            break;
+        case GRAPH_EDGE_REMOVE_TYPE:
+            translateAstEdgeRemoveNode((AstEdgeRemoveNode*) it->current);
+            break;
+        case GRAPH_NODE_REMOVE_TYPE:
+            translateAstNodeRemoveNode((AstNodeRemoveNode*) it->current);
+            break;
+        case TRAVERSE_TYPE:
+            translateAstTraverseNode((AstTraverseNode*) it->current);
             break;
         }
         printf("\n");
@@ -255,12 +274,12 @@ void translateAstBooleanExpressionNode(AstBooleanExpressionNode *node)
 
 void translateAstPrintNode(AstPrintNode *node)
 {
-    printf("printf(");
+    printf("printf");
     AstIdNode *n;
     switch (node->node->type)
     {
     case NUMERIC_TYPE:
-        printf("\"%%d\",");
+        printf("(\"%%d\",");
         printf("%d", ((AstNumericExpressionNode *)node->node)->value);
         break;
     case ID_TYPE:
@@ -268,19 +287,40 @@ void translateAstPrintNode(AstPrintNode *node)
         switch (n->declarationType)
         {
         case INT_DECLARATION_TYPE:
-            printf("\"%%d\",");
+            printf("(\"%%d\",");
+            printf("%s", n->name);
             break;
         case INPUT_DECLARATION_TYPE:
         case STRING_DECLARATION_TYPE:
-            printf("\"%%s\",");
+            printf("(\"%%s\",");
+            printf("%s", n->name);
+            break;
+        case NODE_DECLARATION_TYPE:
+            printf("(\"Node %%d:%%s\",%s->id,%s->value",n->name,n->name);
             break;
         default:
             break;
         }
-        printf("%s", n->name);
         break;
     case CONSTANT_STRING_TYPE:
-        printf("%s", ((AstConstantExpressionNode *)node->node)->stringValue);
+        printf("(%s", ((AstConstantExpressionNode *)node->node)->stringValue);
+        break;
+    case GRAPH_NODE_ACTION_TYPE:
+        AstGraphActionNode * action = (AstGraphActionNode *)node->node;
+        switch (action->property->declarationType){
+            case INT_DECLARATION_TYPE:
+                printf("(\"%%d\",");
+                printf("%s->%s",action->nodeName, action->property->name);
+            break;
+            case STRING_DECLARATION_TYPE:
+                printf("(\"%%s\",");
+                printf("%s->%s",action->nodeName, action->property->name);
+            break;
+            case EDGE_DECLARATION_TYPE:
+                printf("Edge(%s",action->nodeName);
+            break;
+        }
+    break;
     default:
         break;
     }
@@ -356,4 +396,25 @@ void translateAstGraphEdgeForeachNode(AstGraphEdgeForeachNode *node){
 
 void translateAstGraphActionNode(AstGraphActionNode *node){
     printf("%s->%s;",node->nodeName, node->property->name);
+}
+
+
+void translateAstEdgeRemoveNode(AstEdgeRemoveNode * node){
+    printf("removeEdge(%s,%s);", node->leftNode, node->rightNode);
+}
+void translateAstNodeRemoveNode(AstNodeRemoveNode * node){
+    printf("removeNode(graph,%s);", node->nodeName);
+}
+
+void translateAstTraverseNode(AstTraverseNode * node) {
+    printf("traverse");
+    switch(node->procedure->procedure) {
+        case BFS_PROCEDURE:
+        printf("BFS");
+        break;
+        case DFS_PROCEDURE:
+        printf("DFS");
+        break;
+    }
+    printf("(graph,%s);", node->nodeName);
 }

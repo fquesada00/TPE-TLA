@@ -307,6 +307,18 @@ void freeGraph(Graph *graph)
     // printf("at %s\n", __func__);
 }
 
+void printfEdge(GraphEdge * edge){
+    printf("edge weight: ");
+    switch(edge->type){
+        case STRING_EDGE:
+            printf("%s",(char *) edge->weight);
+        break;
+        case INT_EDGE:
+            printf("%d",*((int *)(edge->weight)));
+        break;
+    }
+}
+
 void printNodeList(GraphNode *node)
 {
     GraphEdgeListElement *e = node->firstEdge;
@@ -469,67 +481,4 @@ void traverseBFS(Graph *graph, GraphNode *node)
         nodesId[i] = nodes[i]->id;
     }
     printNodesId(nodesId, idx);
-}
-
-int main2()
-{
-    // Graph *graph = newGraph();
-    // //Node node1, node2, node3, node4, node5
-    // GraphNode *node1 = newGraphNode(graph, "1");
-    // GraphNode *node2 = newGraphNode(graph, "2");
-    // GraphNode *node3 = newGraphNode(graph, "3");
-    // GraphNode *node4 = newGraphNode(graph, "4");
-    // GraphNode *node5 = newGraphNode(graph, "5");
-    // //node1-'h'->node2;
-    // char a = 'a'; //-->Necesary?}
-    // addEdge(node1, node2, (void *)&a, CHAR_EDGE);
-    // addEdge(node1, node3, (void *)&a, CHAR_EDGE);
-    // addEdge(node1, node5, (void *)&a, CHAR_EDGE);
-
-    // //node2-'o'->node3->node4;
-    // char b = 'h';
-    // char c = 'l';
-    // addEdge(node2, node3, (void *)&b, CHAR_EDGE);
-    // addEdge(node3, node4, (void *)&c, CHAR_EDGE);
-    // //node4-'a'->node5;
-    // char d = 'a';
-    // addEdge(node4, node5, (void *)&d, CHAR_EDGE);
-    // //node5-' '->node1;
-    // char e = ' ';
-    // addEdge(node5, node1, (void *)&e, CHAR_EDGE);
-    // //->node5;
-    // setRoot(node5);
-
-    // //foreach(node in graph) { foreach(edge in node.edge) }
-    // GraphNode *aux;
-    // GraphEdge *auxE;
-    // beginForEachNode(graph);
-    // printf("\n-----------    NODE LIST    -----------\n");
-    // while (hasNextForEachNode(graph))
-    // {
-    //     aux = nextForEachNode(graph);
-    //     beginForEachEdge(aux);
-    //     printf("\n-----------    EDGE LIST NODE %d WITH ID %zu   -----------\n", aux->value, aux->id);
-    //     while (hasNextForEachEdge(aux))
-    //     {
-    //         auxE = nextForEachEdge(aux);
-    //         printf("[%d - %c]\t", aux->value, *((char *)auxE->weight));
-    //     }
-    // }
-    // printf("\n\n");
-
-    // // traverse DFS
-    // traverseDFS(graph, node1);
-
-    // // traverse BFS
-    // traverseBFS(graph, node1);
-
-    // // printGraph(graph);
-
-    // // destroy node1
-    // removeNode(graph, node1);
-
-    // printGraph(graph);
-
-    // freeGraph(graph);
 }

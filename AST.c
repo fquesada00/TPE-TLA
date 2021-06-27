@@ -257,9 +257,30 @@ AstEdgeRemoveNode * newAstEdgeRemoveNode(char * leftNode,char * rightNode){
     return new;
 }
 AstNodeRemoveNode * newAstNodeRemoveNode(char * nodeName){
-    
+    AstNodeRemoveNode * new = malloc(sizeof(AstNodeRemoveNode));
+    new->type = GRAPH_NODE_REMOVE_TYPE;
+    int len;
+    len = strnlen(nodeName,MAX_STRING_LENGTH);
+    new->nodeName = malloc((len+1) * sizeof(char));
+    strncpy(new->nodeName, nodeName,len+1);
+    return new;
 }
 
+AstTraverseProcedureNode * newAstTraverseProcedureNode(TRAVERSE_PROCEDURE procedure){
+    AstTraverseProcedureNode * new = malloc(sizeof(AstTraverseProcedureNode));
+    new->type = TRAVERSE_PROCEDURE_TYPE;
+    new->procedure = procedure;
+    return new;
+}
+AstTraverseNode * newAstTraverseNode(char * nodeName, AstTraverseProcedureNode * procedure){
+    AstTraverseNode * new = malloc(sizeof(AstTraverseNode));
+    new->type = TRAVERSE_TYPE;
+    new->procedure = procedure;
+    int len = strnlen(nodeName, MAX_STRING_LENGTH);
+    new->nodeName = malloc((len + 1) * sizeof(char));
+    strncpy(new->nodeName, nodeName,len + 1);
+    return new;
+}
 
 
 void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode *node)
@@ -415,6 +436,9 @@ void freeAstNodeList(AstNodeList *node)
             case GRAPH_NODE_REMOVE_TYPE:
                 freeAstNodeRemoveNode((AstNodeRemoveNode *) it->current);
                 break;
+            case TRAVERSE_TYPE:
+                freeAstTraverseNode((AstTraverseNode *) it->current);
+                break;
             }
             curr = it;
             it = it->next;
@@ -560,4 +584,12 @@ void freeAstEdgeRemoveNode(AstEdgeRemoveNode * node){
 void freeAstNodeRemoveNode(AstNodeRemoveNode * node){
     free(node->nodeName);
     free(node);    
+}
+
+
+
+void freeAstTraverseNode(AstTraverseNode * node) {
+    free(node->procedure);
+    free(node->nodeName);
+    free(node);
 }

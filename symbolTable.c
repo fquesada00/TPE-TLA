@@ -72,6 +72,35 @@ void addSymbolToTable(SymbolTable * symbolTable,char * name, AstDeclarationType 
     symbolTable->size++;
 
 }
+int removeSymbolFromTable(SymbolTable * symbolTable,char * name){
+    Symbol * it = symbolTable->first;
+    Symbol * prev = NULL;
+    while(it != NULL){
+        if(strncmp(it->name,name,MAX_STRING_LEN) == 0){
+            free(it->name);
+            if(prev != NULL)
+                prev->next = it->next;
+            else
+                symbolTable->first = it->next;
+            free(it);
+            return 1;
+        }
+        prev = it;
+        it = it->next;
+    }
+    return 0;
+}
+
+int removeSymbol(ScopeTable * scopeTable,char * name){
+    SymbolTable * it = scopeTable->top;
+    while (it != NULL)
+    {
+        if((removeSymbolFromTable(it,name)))
+            return 1;
+        it = it->prev;
+    }
+    return 0;
+}
 
 int addSymbol(ScopeTable * scopeTable,char * name, AstDeclarationType dataType){
     if(scopeTable == NULL || scopeTable->top == NULL)

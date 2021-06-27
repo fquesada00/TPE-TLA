@@ -26,6 +26,7 @@ Symbol * findSymbolInTable(SymbolTable * symbolTable,char * name);
 Symbol * findSymbol(ScopeTable * scopeTable,char * name);
 void addSymbolToTable(SymbolTable * symbolTable,char * name, AstDeclarationType dataType);
 int addSymbol(ScopeTable * scopeTable,char * name, AstDeclarationType dataType);
+int removeSymbol(ScopeTable * scopeTable,char * name);
 ScopeTable * createScopeTable();
 
 

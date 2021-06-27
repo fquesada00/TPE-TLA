@@ -21,5 +21,7 @@ void translateAstGraphEdgeDeclarationNode(AstGraphEdgeDeclarationNode *node);
 void translateAstGraphNodeForeachNode(AstGraphNodeForeachNode *node);
 void translateAstGraphEdgeForeachNode(AstGraphEdgeForeachNode *node);
 void translateAstGraphActionNode(AstGraphActionNode *node);
-
+void translateAstEdgeRemoveNode(AstEdgeRemoveNode * node);
+void translateAstNodeRemoveNode(AstNodeRemoveNode * node);
+void translateAstTraverseNode(AstTraverseNode * node);
 #endif
