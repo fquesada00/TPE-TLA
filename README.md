@@ -5,7 +5,7 @@ Manejar grafos nunca fue tan sencillo ;)
 
 ## Instalación
 
-Para compilar el compilador de C-Graph hay que ejecutar  `make all` . Para ello hay que tener previamente instalado instalado `yacc` ,`flex` y `gcc` en nuestra computadora.
+Para compilar el compilador de C-Graph hay que ejecutar  `make all` . Para ello hay que tener previamente instalado instalado `yacc` ,`flex` y `gcc` en nuestra computadora. Ademas hay que darle permisos de ejecucion a los scripts de compilacion y testeo, para ello hacemos `chmod +x test.sh compile.sh`.
 
 ## Compilar un archivo
 
