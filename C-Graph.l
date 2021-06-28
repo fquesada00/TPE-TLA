@@ -9,11 +9,14 @@
 digits [0-9]+
 alpha [a-zA-Z]{1,240}[0-9]{0,16}
 ascii-printables [ -!#-~]{1,256}
-ignore [ \t\n]+
+comment-printables [ -~]{1,256}
+ignore [ \t]+
+enter [\n]
 entrypoint graph
 %% 
---\/->                     {return REMOVE_ADJACENCY;}
-\/>                        {return REMOVE_NODE;}
+@{comment-printables}\n   {return COMMENT;}
+--\/->                    {return REMOVE_ADJACENCY;}
+\/>                       {return REMOVE_NODE;}
 ->                        {yylval.string = strdup(yytext); return END_ARROW;}
 --                        {yylval.string = strdup(yytext);return START_ARROW;}
 (==|!=|>=|<=|>|<|&&|\|\|) {yylval.string = strdup(yytext);return BINARY_BOOL_OPERATOR;}
@@ -44,6 +47,7 @@ bfs                       {return BFS;}
 {entrypoint}              {return GRAPH;}
 \"{ascii-printables}\"    {yylval.string = strdup(yytext);return STRING_VALUE;}
 {alpha}                   {yylval.string = strdup(yytext);return ID;}
+{enter}                   {yylineno++;}
 {digits}                  {yylval.num = atoi(yytext);return NUMBER;}
 {ignore}                  ;
 .                         ;

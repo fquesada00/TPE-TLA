@@ -15,6 +15,7 @@
     AstGraphNode * entrypoint;
     char c;
     int firstEntry = 1;
+    extern int yylineno;
 %}
 %start program
 %union {struct AstNode * node;int num; char * string;}
@@ -31,6 +32,7 @@
 %token <string> START_ARROW END_ARROW REMOVE_ADJACENCY REMOVE_NODE
 %token <string> FOREACH NODE_ITERATOR IN EDGE_ITERATOR EDGE_WEIGHT
 %token <string> TRAVERSE WITH TRAVERSE_ROCEDURE STARTING
+%token COMMENT
 %left OPERATOR BINARY_BOOL_OPERATOR UNARY_BOOL_OPERATOR
 %type <node> blockcode code declaration exp boolExp conditional conditionalElse forLoop definition
 %type <node> term forBlockcode output
@@ -74,11 +76,13 @@ code:           ';'                         {$$ = (AstNode *) newAstCodeNode((As
                 |
                 code traverseGraph ';'      {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
+                code COMMENT
+                |
                                             {$$ = (AstNode *) NULL;}
 ;
 declaration:    INT ID                      {
                                                 if(findSymbol(scopeTable,$2)){
-                                                    yyerror("Cannot redeclare variable");
+                                                    yyerror("Syntax Error: Cannot redeclare variable.");
                                                 }else 
                                                     addSymbol(scopeTable,$2,INT_DECLARATION_TYPE);
                                                 $$ = (AstNode *) newAstDeclarationNode((AstNode *)NULL,$2,INT_DECLARATION_TYPE);
@@ -87,7 +91,7 @@ declaration:    INT ID                      {
                 |                
                 INT ID '=' exp              {
                                                 if(findSymbol(scopeTable,$2)){
-                                                    yyerror("Cannot redeclare variable");
+                                                    yyerror("Syntax Error: Cannot redeclare variable.");
                                                 }else
                                                     addSymbol(scopeTable,$2,INT_DECLARATION_TYPE);
                                                 $$ = (AstNode *) newAstDeclarationNode((AstNode *)$4, $2,INT_DECLARATION_TYPE);
@@ -96,7 +100,7 @@ declaration:    INT ID                      {
                 |
                 STRING ID                   {
                                                 if(findSymbol(scopeTable,$2)){
-                                                        yyerror("Cannot redeclare variable");
+                                                        yyerror("Syntax Error: Cannot redeclare variable.");
                                                 }else
                                                     addSymbol(scopeTable,$2,STRING_DECLARATION_TYPE);
                                                 $$ = (AstNode *) newAstDeclarationNode((AstNode *)NULL,$2,STRING_DECLARATION_TYPE);
@@ -105,7 +109,7 @@ declaration:    INT ID                      {
                 |
                 STRING ID '=' STRING_VALUE  {   
                                                 if(findSymbol(scopeTable,$2)){
-                                                        yyerror("Cannot redeclare variable");
+                                                        yyerror("Syntax Error: Cannot redeclare variable.");
                                                 }else
                                                     addSymbol(scopeTable,$2,STRING_DECLARATION_TYPE);
                                                 $$ = (AstNode *) newAstDeclarationNode((AstNode *)newAstConstantExpressionNode($4),$2,STRING_DECLARATION_TYPE);
@@ -115,7 +119,7 @@ declaration:    INT ID                      {
                 |
                 STRING ID '=' INPUT'(' ')'  {
                                                 if(findSymbol(scopeTable,$2)){
-                                                        yyerror("Cannot redeclare variable");
+                                                        yyerror("Syntax Error: Cannot redeclare variable.");
                                                 }else
                                                     addSymbol(scopeTable,$2,INPUT_DECLARATION_TYPE);
                                                 $$ = (AstNode *) newAstDeclarationNode((AstNode *)NULL,$2,INPUT_DECLARATION_TYPE);
@@ -123,7 +127,7 @@ declaration:    INT ID                      {
                                             }
 ;
 nodeDeclaration:    NODE ID '=' nodeValue nextNodeDeclaration   {   if(findSymbol(scopeTable,$2)){
-                                                                            yyerror("Cannot redeclare variable");
+                                                                            yyerror("Syntax Error: Cannot redeclare variable.");
                                                                     }else
                                                                         addSymbol(scopeTable,$2,NODE_DECLARATION_TYPE);
                                                                     $$ = (AstNode *) newAstGraphNodeDeclarationNode($2, (AstGraphNodeDeclarationNode *) $5, $4); 
@@ -138,16 +142,16 @@ nodeValue:          STRING_VALUE                {
                     ID                          {
                                                     Symbol * symbol;
                                                     if((symbol=findSymbol(scopeTable,$1)) == NULL)
-                                                        yyerror("undeclared variable");
+                                                        yyerror("Syntax Error: Usage of undeclared variable.");
                                                     if(symbol->dataType == INT_DECLARATION_TYPE || symbol->dataType == NODE_DECLARATION_TYPE ) 
-                                                        yyerror("Invalid data type, expected string data type");
+                                                        yyerror("Invalid data type, expected string data type.");
                                                     $$ = (AstNode *)newAstIdNode($1, symbol->dataType);
                                                     free($1);
                                                 }
 ;
 nextNodeDeclaration:    ',' ID '=' nodeValue nextNodeDeclaration    {
                                                                         if(findSymbol(scopeTable,$2)){
-                                                                            yyerror("Cannot redeclare variable");
+                                                                            yyerror("Syntax Error: Cannot redeclare variable.");
                                                                         }else
                                                                             addSymbol(scopeTable,$2,NODE_DECLARATION_TYPE);
                                                                         $$ = (AstNode *) newAstGraphNodeDeclarationNode($2, (AstGraphNodeDeclarationNode *) $5, $4);
@@ -158,13 +162,13 @@ nextNodeDeclaration:    ',' ID '=' nodeValue nextNodeDeclaration    {
 ;
 adjacencyDeclaration:   ID START_ARROW edgeValue END_ARROW ID       {
                                                                         if(!strncmp($1,$5,MAX_IDENTIFIER_LENGTH)){
-                                                                            yyerror("Cannot create self edge");
+                                                                            yyerror("Syntax Error: Self-Loops are not supported.");
                                                                         }
                                                                         Symbol * left, * right;    
                                                                         if((left = findSymbol(scopeTable,$1)) == NULL || (right = findSymbol(scopeTable,$5)) == NULL)
-                                                                            yyerror("Cannot redeclare variable");
+                                                                            yyerror("Syntax Error: Cannot redeclare variable.");
                                                                         if(left->dataType != NODE_DECLARATION_TYPE || right->dataType != NODE_DECLARATION_TYPE)
-                                                                            yyerror("Invalid data type, expected Node data type");
+                                                                            yyerror("Syntax Error: Expected Node data type.");
                                                                         $$ = (AstNode *) newAstGraphEdgeDeclarationNode($1,$5,$3);
                                                                         free($1);
                                                                         free($5);
@@ -176,9 +180,9 @@ adjacencyDeclaration:   ID START_ARROW edgeValue END_ARROW ID       {
 removeGraphNode:        REMOVE_NODE ID                              {
                                                                         Symbol * symbol;
                                                                         if((symbol = findSymbol(scopeTable,$2))==NULL){
-                                                                            yyerror("Cannot delete undeclared node");
+                                                                            yyerror("Syntax Error: Cannot delete undeclared node.");
                                                                         }else if(symbol->dataType != NODE_DECLARATION_TYPE)
-                                                                            yyerror("Cannot delete non Node data type variable");
+                                                                            yyerror("Syntax Error: Expected Node data type");
                                                                         removeSymbol(scopeTable,$2);
                                                                         $$ = (AstNode *)newAstNodeRemoveNode($2);free($2);
                                                                     }
@@ -187,13 +191,13 @@ removeGraphAdjacency:   ID REMOVE_ADJACENCY ID                      {
 
                                                                         Symbol * left, * right;
                                                                         if((left = findSymbol(scopeTable,$1)) == NULL || (right = findSymbol(scopeTable,$1)) == NULL){
-                                                                            yyerror("usage of undeclared node");
+                                                                            yyerror("Syntax Error: Usage of undeclared node variable.");
                                                                         }
                                                                         if(left->dataType != NODE_DECLARATION_TYPE || right->dataType != NODE_DECLARATION_TYPE) {
-                                                                            yyerror("cannot remove non Node data type variable");
+                                                                            yyerror("Syntax Error: Expected Node data type.");
                                                                         }
                                                                         if(!strncmp($1,$3,MAX_IDENTIFIER_LENGTH)){
-                                                                            yyerror("Cannot remove self edge");
+                                                                            yyerror("Syntax Error: Self-Loops are not supported.");
                                                                         }
                                                                         $$ = (AstNode*)newAstEdgeRemoveNode($1,$3);
                                                                         free($1);
@@ -203,7 +207,7 @@ removeGraphAdjacency:   ID REMOVE_ADJACENCY ID                      {
 ;
 removeAdjacency:        nodeField REMOVE_ADJACENCY nodeField        {
                                                                         if(!strncmp($1,$3,MAX_IDENTIFIER_LENGTH)){
-                                                                            yyerror("Cannot remove self edge");
+                                                                            yyerror("Syntax Error: Self-Loops are not supported.");
                                                                         }
 
                                                                         $$ = (AstNode*)newAstEdgeRemoveNode($1,$2);
@@ -218,54 +222,52 @@ edgeValue:              NUMBER                                      { $$ = (AstN
                         ID                                          {
                                                                         Symbol * symbol;
                                                                         if((symbol=findSymbol(scopeTable,$1)) == NULL)
-                                                                            yyerror("undeclared variable");
+                                                                            yyerror("Syntax Error: Usage of undeclared variable.");
                                                                         if(symbol->dataType == NODE_DECLARATION_TYPE ) 
-                                                                            yyerror("cannot replace Node data type in edge definition");
+                                                                            yyerror("Syntax Error: Invalid data type. Edge definition only allows int and string type for weight.");
                                                                         $$ = (AstNode *)newAstIdNode($1, symbol->dataType);
                                                                         free($1);
-                                                                    }
-//TODO: Charlar lambda
-                        
+                                                                    }                        
 ;
 
-foreachNode:    FOREACH '(' NODE_ITERATOR IN GRAPH ')' nodeBlockcode   {$$ = (AstNode *) newAstGraphNodeForeachNode((AstBlockcodeNode *) $7);free($4);}
+foreachNode:            FOREACH '(' NODE_ITERATOR IN GRAPH ')' nodeBlockcode   {$$ = (AstNode *) newAstGraphNodeForeachNode((AstBlockcodeNode *) $7);free($4);}
 ;
-nodeBlockcode:      '{' { pushScope(scopeTable); } nodeCode '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$3);popScope(scopeTable);}
+nodeBlockcode:          '{' { pushScope(scopeTable); } nodeCode '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$3);popScope(scopeTable);}
 ;
-nodeCode:       ';'                             {$$ = (AstNode *) newAstCodeNode((AstNode *)NULL,(AstCodeNode *)NULL);}
-                |
-                nodeCode declaration ';'        {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
-                |
-                nodeCode conditional            {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
-                |
-                nodeCode forLoop                {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
-                |
-                nodeCode definition ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
-                |
-                nodeCode outputNode ';'             {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
-                |
-                nodeCode foreachEdge            {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
-                |
-                nodeCode nodeAction ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
-                |
-                nodeCode adjacencyDeclaration ';'  {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
-                |
-                nodeCode removeAdjacency ';'    {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
-                |
-                nodeCode traverseGraphNode ';'  {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
-                |
-                                                {$$ = (AstNode *) NULL;}
+nodeCode:               ';'                             {$$ = (AstNode *) newAstCodeNode((AstNode *)NULL,(AstCodeNode *)NULL);}
+                        |
+                        nodeCode declaration ';'        {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                        |
+                        nodeCode conditional            {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                        |
+                        nodeCode forLoop                {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                        |
+                        nodeCode definition ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                        |
+                        nodeCode outputNode ';'             {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                        |
+                        nodeCode foreachEdge            {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                        |
+                        nodeCode nodeAction ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                        |
+                        nodeCode adjacencyDeclaration ';'  {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                        |
+                        nodeCode removeAdjacency ';'    {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                        |
+                        nodeCode traverseGraphNode ';'  {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                        |
+                                                        {$$ = (AstNode *) NULL;}
 ;
-graphAction:    ID nodeProperty                 {
-                                                    Symbol * symbol;
-                                                    if((symbol = findSymbol(scopeTable,$1)) == NULL){
-                                                        yyerror("usage of undeclared node");
-                                                    }
-                                                    if(symbol->dataType != NODE_DECLARATION_TYPE) {
-                                                        yyerror("cannot iterate over non Node data type variable");
-                                                    }
-                                                    $$ = (AstNode *) newAstGraphActionNode($1,(AstIdNode *)$2);free($1);
-                                                }
+graphAction:            ID nodeProperty                 {
+                                                            Symbol * symbol;
+                                                            if((symbol = findSymbol(scopeTable,$1)) == NULL){
+                                                                yyerror("Syntax Error: Usage of undeclared node.");
+                                                            }
+                                                            if(symbol->dataType != NODE_DECLARATION_TYPE) {
+                                                                yyerror("Syntax Error: Cannot iterate over non Node data type.");
+                                                            }
+                                                            $$ = (AstNode *) newAstGraphActionNode($1,(AstIdNode *)$2);free($1);
+                                                        }
 ;
 nodeAction:     nodeField nodeProperty          {$$ = (AstNode *) newAstGraphActionNode($1,(AstIdNode *)$2);free($1);}
 ;
@@ -282,10 +284,10 @@ foreachEdge:    FOREACH '(' EDGE_ITERATOR IN nodeField ')' edgeBlockcode   {
 nodeField:      ID                                                      {
                                                                             Symbol * symbol;
                                                                             if((symbol = findSymbol(scopeTable,$1)) == NULL){
-                                                                                yyerror("usage of undeclared node");
+                                                                                yyerror("Syntax Error: Usage of undeclared node.");
                                                                             }
                                                                             if(symbol->dataType != NODE_DECLARATION_TYPE) {
-                                                                                yyerror("cannot iterate over non Node data type variable");
+                                                                                yyerror("Syntax Error: Cannot iterate over non Node data type.");
                                                                             }
                                                                             $$ = $1;
                                                                         }
@@ -318,9 +320,9 @@ definition:     ID '=' exp                  {
                                                 Symbol * symbol;
                                                 if((symbol=findSymbol(scopeTable,$1)) != NULL){
                                                     if(symbol->dataType != INT_DECLARATION_TYPE)
-                                                        yyerror("Invalid definition data type");
+                                                        yyerror("Syntax Error: Invalid definition, expected int data type.");
                                                 }else
-                                                    yyerror("undeclared variable");
+                                                    yyerror("Syntax Error: Usage of undeclared node.");
                                                 $$ = (AstNode *) newAstDefinitionNode($3,$1,INT_DECLARATION_TYPE);
                                                 free($1);
                                             }
@@ -329,9 +331,9 @@ definition:     ID '=' exp                  {
                                                 Symbol * symbol;
                                                 if((symbol=findSymbol(scopeTable,$1)) != NULL){
                                                     if(symbol->dataType == INT_DECLARATION_TYPE || symbol->dataType == NODE_DECLARATION_TYPE)
-                                                        yyerror("Invalid definition data type");
+                                                        yyerror("Syntax Error: Invalid definition, expected int data type.");
                                                 }else
-                                                    yyerror("undeclared variable");
+                                                    yyerror("Syntax Error: Usage of undeclared variable.");
                                                 $$ = (AstNode *) newAstDefinitionNode((AstNode *)newAstConstantExpressionNode($3),$1,STRING_DECLARATION_TYPE);
                                                 free($1);
                                             }
@@ -340,9 +342,9 @@ definition:     ID '=' exp                  {
                                                 Symbol * symbol;
                                                 if((symbol=findSymbol(scopeTable,$1)) != NULL){
                                                     if(symbol->dataType == INT_DECLARATION_TYPE || symbol->dataType == NODE_DECLARATION_TYPE )
-                                                        yyerror("Invalid definition data type");
+                                                        yyerror("Syntax Error: Invalid definition data type, expected string data type.");
                                                 }else
-                                                    yyerror("undeclared variable");
+                                                    yyerror("Syntax Error: Usage of undeclared variable.");
                                                 $$ = (AstNode *) newAstDefinitionNode((AstNode *)NULL,$1,INPUT_DECLARATION_TYPE);
                                                 free($1);
                                             }
@@ -356,9 +358,9 @@ term:           NUMBER                      {$$ = (AstNode *)newAstNumericExpres
                 ID                          {
                                                 Symbol * symbol;
                                                 if((symbol=findSymbol(scopeTable,$1)) == NULL)
-                                                    yyerror("undeclared variable");
+                                                    yyerror("Syntax Error: Usage of undeclared variable.");
                                                 if(symbol->dataType != INT_DECLARATION_TYPE) 
-                                                    yyerror("cannot replace different data type than int");
+                                                    yyerror("Syntax Error: Invalid definition data type, expected int data type.");
                                                 $$ = (AstNode *)newAstIdNode($1, symbol->dataType);
                                                 free($1);
                                             }
@@ -383,7 +385,7 @@ output:         OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintN
                 OUTPUT '(' ID ')'               {
                                                     Symbol * symbol;
                                                     if((symbol=findSymbol(scopeTable,$3)) == NULL)
-                                                        yyerror("undeclared variable");
+                                                        yyerror("Syntax Error: Usage of undeclared variable.");
                                                     AstNode * node = (AstNode *) newAstIdNode($3,symbol->dataType);
                                                     $$ = (AstNode *) newAstPrintNode(node);
                                                     free($3);
@@ -403,7 +405,7 @@ outputNode:     OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintN
                 OUTPUT '(' ID ')'               {
                                                     Symbol * symbol;
                                                     if((symbol=findSymbol(scopeTable,$3)) == NULL)
-                                                        yyerror("undeclared variable");
+                                                        yyerror("Syntax Error: Usage of undeclared variable.");
                                                     AstNode * node = (AstNode *) newAstIdNode($3,symbol->dataType);
                                                     $$ = (AstNode *) newAstPrintNode(node);
                                                     free($3);
@@ -423,7 +425,7 @@ outputEdge:     OUTPUT '(' STRING_VALUE ')'       {$$ = (AstNode *) newAstPrintN
                 OUTPUT '(' ID ')'               {
                                                     Symbol * symbol;
                                                     if((symbol=findSymbol(scopeTable,$3)) == NULL)
-                                                        yyerror("undeclared variable");
+                                                        yyerror("Syntax Error: Usage of undeclared variable.");
                                                     AstNode * node = (AstNode *) newAstIdNode($3,symbol->dataType);
                                                     $$ = (AstNode *) newAstPrintNode(node);
                                                     free($3);
@@ -446,7 +448,6 @@ forLoop:        FOR '(' {pushScope(scopeTable);} declaration ';'  boolExp ';' de
 ;
 forBlockcode:      '{' code '}'                {$$ = (AstNode *) newAstBlockcodeNode((AstCodeNode *)$2);popScope(scopeTable);}
 ;
-    // traverse(graph with bfs starting node0)
 traverseGraphNode:  TRAVERSE '(' GRAPH WITH traverseProcedure STARTING nodeField ')'   {
                                                                                         $$ = (AstNode *) newAstTraverseNode($7, (AstTraverseProcedureNode *) $5);
                                                                                         free($7);
@@ -455,9 +456,9 @@ traverseGraphNode:  TRAVERSE '(' GRAPH WITH traverseProcedure STARTING nodeField
 traverseGraph:  TRAVERSE '(' GRAPH WITH traverseProcedure STARTING ID ')'             {
                                                                                         Symbol * symbol;
                                                                                         if((symbol = findSymbol(scopeTable,$7))==NULL){
-                                                                                            yyerror("Cannot iterate over undeclared node");
+                                                                                            yyerror("Syntax Error: Cannot iterate over undeclared node.");
                                                                                         }else if(symbol->dataType != NODE_DECLARATION_TYPE)
-                                                                                            yyerror("Cannot iterate over non Node data type variable"); 
+                                                                                            yyerror("Syntax Error: Cannot iterate over non Node data type."); 
                                                                                         $$ = (AstNode *) newAstTraverseNode($7, (AstTraverseProcedureNode *) $5);
                                                                                         free($7); 
                                                                                     }
@@ -479,7 +480,7 @@ int main (void) {
 }
 
 void yyerror (char *s) {
-    fprintf (stderr, "%s\n", s);
+    fprintf (stderr, "at line %d: %s\n", yylineno,s);
     yylex_destroy();
     free(scopeTable);
     exit(EXIT_FAILURE);
