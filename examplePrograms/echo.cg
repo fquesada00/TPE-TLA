@@ -1,0 +1,4 @@
+graph(){
+    string s = input();
+    output(s);
+}

@@ -1,0 +1,9 @@
+graph(){
+    output("Voy a hacer el factorial de 22");
+    int ans = 1;
+    int n = 22;
+    for(int i = 0; i < n;i = i+1){
+        ans = ans*i;
+    }
+    output(ans);
+}
