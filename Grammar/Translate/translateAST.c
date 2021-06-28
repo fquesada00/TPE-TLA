@@ -18,7 +18,8 @@ void translateMainBlockcode(AstBlockcodeNode *node)
 
 void translateAstGraphNode(AstGraphNode *node)
 {
-    int graphLib = open("./graph.c",O_RDONLY);
+    int graphLib = open("./Grammar/Translate/graph.c",O_RDONLY);
+    if(graphLib == -1){perror("FATAL: Could not find graph library. Please make sure that graph.c is at /Grammar/Translate");exit(EXIT_FAILURE);}
     char BUFFER[1024 + 1] = {0};
     int size = 0;
     printf("\n// #---------------------------------------------#\n");

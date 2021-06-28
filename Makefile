@@ -1,10 +1,14 @@
 all:
-	yacc -d C-Graph.y --debug --verbose
-	lex C-Graph.l
-	$(CC) -o CG lex.yy.c y.tab.c AST.c translateAST.c symbolTable.c -lfl -g
+	cd Grammar; make all;
+	cd ..;
+	$(CC) -o CG Grammar/lex.yy.c Grammar/y.tab.c Grammar/Translate/AST.c  Grammar/Translate/translateAST.c  Grammar/symbolTable.c -lfl -g
 
 clean:
-	rm CG y.tab.c y.tab.h lex.yy.c y.output
+	cd Grammar; make clean;
+	cd ..;
+	cd executables; rm -f *; cd ..;
+	cd generatedCode; rm -f *; cd ..;
+	rm -f CG
 
 graph:
 	$(CC) -o graph graph.c  -Wall -pedantic -g

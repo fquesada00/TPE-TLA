@@ -2,12 +2,12 @@
     #include <string.h>
     #include <stdlib.h>
     #include <stdio.h>
-    #include "AST.h"
-    #include "translateAST.h"
+    #include "Translate/AST.h"
+    #include "Translate/translateAST.h"
     #include "symbolTable.h"
     #define MAX_IDENTIFIER_LENGTH 256
-    #define YYDEBUG 1
-    int yydebug = 1;
+    #define YYDEBUG 0
+    int yydebug = 0;
     void yyerror (char *s);
     int yylex();
     int yylex_destroy();
@@ -134,7 +134,7 @@ declaration:    INT ID                      {
                                                     addSymbol(scopeTable,$2,STRING_DECLARATION_TYPE);
                                                 }
                                                 if(symbol->dataType != INPUT_DECLARATION_TYPE || symbol->dataType != STRING_DECLARATION_TYPE){
-                                                    yyerror("Syntax Error: Invalid data type, expected string data type.")
+                                                    yyerror("Syntax Error: Invalid data type, expected string data type.");
                                                 }
                                                 $$ = (AstNode *) newAstDeclarationNode((AstNode *)newAstConstantExpressionNode($4),$2,STRING_DECLARATION_TYPE);
                                                 free($2);
@@ -271,7 +271,7 @@ nodeCode:               ';'                             {$$ = (AstNode *) newAst
                         |
                         nodeCode traverseGraphNode ';'  {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                         |
-                        code COMMENT
+                        nodeCode COMMENT
                         |
                                                         {$$ = (AstNode *) NULL;}
 ;
@@ -329,7 +329,7 @@ edgeCode:       ';'                             {$$ = (AstNode *) newAstCodeNode
                 |
                 edgeCode edgeAction ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
-                code COMMENT
+                edgeCode COMMENT
                 |
                                                 {$$ = (AstNode *) NULL;}
 ;

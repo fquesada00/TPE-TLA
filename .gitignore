@@ -64,3 +64,4 @@ y.output
 output.txt
 valgrind-out.txt
 input.cg
+executables/

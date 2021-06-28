@@ -1,6 +1,6 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
-#include "AST.h"
+#include "Translate/AST.h"
 
 typedef struct Symbol{
     char * name;
