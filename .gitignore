@@ -56,7 +56,6 @@ dkms.conf
 
 
 # Yacc and Lexx files compile and executable results
-CG
 graph
 y.tab.*
 lex.yy.c
