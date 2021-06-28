@@ -121,6 +121,21 @@ declaration:    INT ID                      {
                                                 $$ = (AstNode *) newAstDeclarationNode((AstNode *)NULL,$2,INPUT_DECLARATION_TYPE);
                                                 free($2);
                                             }
+                |
+                STRING ID '=' ID            {
+                                                Symbol * symbol;
+                                                if((symbol = findSymbol(scopeTable,$4)) == NULL || findSymbol(scopeTable, $2) != NULL) {
+                                                    // TODO error
+                                                }else{
+                                                    addSymbol(scopeTable,$2,STRING_DECLARATION_TYPE);
+                                                }
+                                                if(symbol->dataType != INPUT_DECLARATION_TYPE || symbol->dataType != INPUT_DECLARATION_TYPE){
+                                                    // TODO error
+                                                }
+                                                $$ = (AstNode *) newAstDeclarationNode((AstNode *)newAstConstantExpressionNode($4),$2,STRING_DECLARATION_TYPE);
+                                                free($2);
+                                                free($4);
+                                            }
 ;
 nodeDeclaration:    NODE ID '=' nodeValue nextNodeDeclaration   {   if(findSymbol(scopeTable,$2)){
                                                                             yyerror("Cannot redeclare variable");
