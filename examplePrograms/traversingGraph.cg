@@ -1,0 +1,45 @@
+graph(){
+    @ program to demonstrate iteration over a graph 
+    @ removing their nodes and iteration with BFS, DFS and foreach node and foreach edge 
+    @ predicting the output and verifying with output executable file 
+    string name = "traversing";
+    Node n1 = name, n2 = "with", n3 = "procedure", n4 = "fourth node", n5 = "not last", n6 = "last";
+    n1--"1"->n2;
+    n1--1->n3;
+    n1--"2"->n6;
+    n2--2->n4;
+    n2--"3"->n3;
+    n3--3->n4;
+    n4--"4"->n6;
+    n6--4->n4;
+    output("Expected output for DFS traverse procedure:");
+    output("\n0 -> 1 -> 3 -> 5 ->\n");
+    output("\n0 -> 1 -> 2 -> 3 -> 5 ->\n");
+    output("\n0 -> 2 -> 3 -> 5 ->\n");
+    output("\n0 -> 5 -> 3 ->\n");
+    traverse(graph with dfs starting n1);
+    output("Expected output for BFS traverse procedure:");
+    output("\n0 -> 1 -> 2 -> 5 -> 3 ->\n");
+    traverse(graph with bfs starting n1);
+    @ here we remove node with name n2, so every node ID would decrement by one from n3 inclusive 
+    />n2;
+    @ here we remove the edge from node with name n1 to node with name n3
+    n1--/->n3;
+    output("Expected output for DFS traverse procedure:");
+    output("\n0 -> 4 -> 2 ->\n");
+    traverse(graph with dfs starting n1);
+    output("Expected output for BFS traverse procedure:");
+    output("\n0 -> 4 -> 2 ->\n");
+    traverse(graph with bfs starting n1);
+    foreach(node in graph){
+        output("Node with id: ");
+        output(node.id);
+        output(" and value: ");
+        output(node.value);
+        foreach(edge in node){
+            output("edge weight: ");
+            output(edge);
+        }
+        output("\n");
+    }
+}
