@@ -271,6 +271,8 @@ nodeCode:               ';'                             {$$ = (AstNode *) newAst
                         |
                         nodeCode traverseGraphNode ';'  {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                         |
+                        code COMMENT
+                        |
                                                         {$$ = (AstNode *) NULL;}
 ;
 graphAction:            ID nodeProperty                 {
@@ -326,6 +328,8 @@ edgeCode:       ';'                             {$$ = (AstNode *) newAstCodeNode
                 edgeCode nodeAction ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
                 |
                 edgeCode edgeAction ';'         {$$ = (AstNode *) newAstCodeNode($2,(AstCodeNode *)$1);}
+                |
+                code COMMENT
                 |
                                                 {$$ = (AstNode *) NULL;}
 ;
