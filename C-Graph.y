@@ -129,12 +129,12 @@ declaration:    INT ID                      {
                 STRING ID '=' ID            {
                                                 Symbol * symbol;
                                                 if((symbol = findSymbol(scopeTable,$4)) == NULL || findSymbol(scopeTable, $2) != NULL) {
-                                                    // TODO error
+                                                    yyerror("Syntax Error: Usage of undeclared variable.");
                                                 }else{
                                                     addSymbol(scopeTable,$2,STRING_DECLARATION_TYPE);
                                                 }
-                                                if(symbol->dataType != INPUT_DECLARATION_TYPE || symbol->dataType != INPUT_DECLARATION_TYPE){
-                                                    // TODO error
+                                                if(symbol->dataType != INPUT_DECLARATION_TYPE || symbol->dataType != STRING_DECLARATION_TYPE){
+                                                    yyerror("Syntax Error: Invalid data type, expected string data type.")
                                                 }
                                                 $$ = (AstNode *) newAstDeclarationNode((AstNode *)newAstConstantExpressionNode($4),$2,STRING_DECLARATION_TYPE);
                                                 free($2);
