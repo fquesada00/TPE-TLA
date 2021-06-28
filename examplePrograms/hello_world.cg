@@ -1,3 +1,0 @@
-graph(){
-    output("Hello World\n");
-}
