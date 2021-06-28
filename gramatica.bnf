@@ -1,0 +1,88 @@
+G = <NT,T,program,P>
+
+T = {ID, STRING_VALUE, ELSE_IF, IF, ELSE, FOR,NUMBER, INT, STRING, DFS, BFS,OPERATOR, BINARY_BOOL_OPERATOR, UNARY_BOOL_OPERATOR,INPUT, OUTPUT, NODE, NODE_VALUE,NODE_ID, START_ARROW, END_ARROW, REMOVE_ADJACENCY, REMOVE_NODE, FOREACH, NODE_ITERATOR, IN, EDGE_ITERATOR, EDGE_WEIGHT, TRAVERSE, WITH, TRAVERSE_ROCEDURE, STARTING, {, }, (, ) , COMMENT, ,, ;}
+
+NT = {program, blockcode, code,declaration,nodeDeclaration, nodeValue, nextNodeDeclaration, adjacencyDeclaration, removeGraphNode, removeGraphAdjacency, removeAdjacency, edgeValue, foreachNode, nodeBlockCode, nodeCode, graphAction, nodeAction, nodeProperty, forEachEdge, nodeField, edgeBlockCode, edgeCode, edgeAction, definition, exp, term, conditional, conditionalElse, boolExp, output, outputNode, outputEdge, forLoop, forBlockcode, traverseGraphNode, traverseGraph, traverseProcedure, edgeProperty}
+
+P= {
+program::= GRAPH () blockcode 
+
+blockcode::=   {code}  
+           
+code::=           ; | code declaration ; | code conditional | code forLoop | code definition ; | code output ; | code nodeDeclaration ; | code adjacencyDeclaration ; | code removeGraphAdjacency ; | code removeGraphNode ;| code foreachNode | code foreachEdge | code graphAction ; | code traverseGraph ; | code COMMENT | lambda
+
+declaration::=    INT ID | INT ID = exp | STRING ID | STRING ID = STRING_VALUE | STRING ID = INPUT()  
+
+nodeDeclaration::=    NODE ID = nodeValue nextNodeDeclaration  
+
+nodeValue::=          STRING_VALUE | ID                          
+
+nextNodeDeclaration::=    , ID = nodeValue nextNodeDeclaration |lambda
+
+adjacencyDeclaration::=   ID START_ARROW edgeValue END_ARROW ID       
+
+removeGraphNode::=        REMOVE_NODE ID                             
+
+removeGraphAdjacency::=   ID REMOVE_ADJACENCY ID                     
+
+removeAdjacency::=        nodeField REMOVE_ADJACENCY nodeField       
+
+edgeValue::=              NUMBER | STRING_VALUE | ID                                                               
+
+foreachNode::=    FOREACH ( NODE_ITERATOR IN GRAPH ) nodeBlockcode  
+
+nodeBlockcode::=     { nodeCode }              
+
+nodeCode::=      ; |nodeCode declaration ; |nodeCode conditional |nodeCode forLoop |nodeCode definition ; |nodeCode outputNode ; | nodeCode foreachEdge | nodeCode nodeAction ; | nodeCode adjacencyDeclaration ; | nodeCode removeAdjacency ;| nodeCode traverseGraphNode ; | nodeCode COMMENT | lambda
+
+graphAction::=    ID nodeProperty                
+
+nodeAction::=     nodeField nodeProperty          
+
+nodeProperty::=   NODE_VALUE | NODE_ID                         
+
+foreachEdge::=    FOREACH ( EDGE_ITERATOR IN nodeField ) edgeBlockcode   
+
+nodeField::=      ID | NODE_ITERATOR                                         
+
+edgeBlockcode::=      { edgeCode }             
+
+edgeCode::=      ; |edgeCode declaration ; | edgeCode conditional | edgeCode forLoop | edgeCode COMMENT
+
+edgeCode definition ;| edgeCode outputEdge ; | edgeCode nodeAction ; |edgeCode 
+
+edgeAction ;|lambda
+
+edgeAction::=     EDGE_ITERATOR EDGE_WEIGHT       
+
+definition::=     ID = exp OPERATOR exp | ID = term  |ID = STRING_VALUE |ID = INPUT()         
+
+exp::=           term   | exp OPERATOR exp           
+
+term::=           NUMBER | ID                          
+
+conditional::=    IF ( boolExp ) blockcode conditionalElse 
+
+conditionalElse::= ELSE_IF ( boolExp ) blockcode conditionalElse | ELSE blockcode | lambda
+
+boolExp::=        term | boolExp BINARY_BOOL_OPERATOR boolExp | 
+UNARY_BOOL_OPERATOR boolExp     
+
+output::=         OUTPUT ( STRING_VALUE ) | OUTPUT ( ID ) | OUTPUT ( NUMBER ) | OUTPUT ( graphAction )     
+
+outputNode::=    OUTPUT ( STRING_VALUE ) | OUTPUT ( ID )| OUTPUT ( NUMBER ) | OUTPUT ( nodeAction )
+
+outputEdge ::=   OUTPUT ( STRING_VALUE ) | OUTPUT ( ID ) | OUTPUT ( NUMBER ) | OUTPUT ( nodeAction ) | OUTPUT ( EDGE_ITERATOR edgeProperty )     
+
+edgeProperty ::= EDGE_WEIGHT
+
+forLoop ::=        FOR ( declaration ;  boolExp ; definition ) forBlockcode 
+
+forBlockcode ::=      { code }        
+
+traverseGraphNode ::=  TRAVERSE ( GRAPH WITH traverseProcedure STARTING nodeField )   
+
+traverseGraph ::=  TRAVERSE ( GRAPH WITH traverseProcedure STARTING ID )             
+
+traverseProcedure ::=  BFS | DFS
+}
