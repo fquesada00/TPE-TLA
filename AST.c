@@ -586,10 +586,19 @@ void freeAstNodeRemoveNode(AstNodeRemoveNode * node){
     free(node);    
 }
 
-
-
 void freeAstTraverseNode(AstTraverseNode * node) {
     free(node->procedure);
     free(node->nodeName);
     free(node);
+}
+
+char checkIsInteger(AstNode * node){
+    AstIdNode * id;
+    if(node->type == ID_TYPE) {
+        id = (AstIdNode *) node;
+        if(id->declarationType != INT_DECLARATION_TYPE) {
+            return 0;
+        }
+    }
+    return 1;
 }

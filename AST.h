@@ -220,6 +220,7 @@ AstEdgeRemoveNode * newAstEdgeRemoveNode(char * leftNode,char * rightNode);
 AstNodeRemoveNode * newAstNodeRemoveNode(char * nodeName);
 AstTraverseProcedureNode * newAstTraverseProcedureNode(TRAVERSE_PROCEDURE procedure);
 AstTraverseNode * newAstTraverseNode(char * nodeName, AstTraverseProcedureNode * procedure);
+char checkIsInteger(AstNode * node);
 void freeAstArithmeticExpressionNode(AstArithmeticExpressionNode * node);
 void freeAstConstantExpressionNode(AstConstantExpressionNode * node);
 void freeAstBooleanExpressionNode(AstBooleanExpressionNode * node);

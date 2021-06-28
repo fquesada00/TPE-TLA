@@ -334,15 +334,30 @@ edgeCode:       ';'                             {$$ = (AstNode *) newAstCodeNode
                                                 {$$ = (AstNode *) NULL;}
 ;
 edgeAction:     EDGE_ITERATOR EDGE_WEIGHT       {$$ = (AstNode *) newAstGraphActionNode("edgeIterator",newAstIdNode("weight",EDGE_DECLARATION_TYPE));}
-;    
-definition:     ID '=' exp                  {
+;
+definition:     ID '=' exp OPERATOR exp         {
                                                 Symbol * symbol;
                                                 if((symbol=findSymbol(scopeTable,$1)) != NULL){
                                                     if(symbol->dataType != INT_DECLARATION_TYPE)
                                                         yyerror("Syntax Error: Invalid definition, expected int data type.");
                                                 }else
                                                     yyerror("Syntax Error: Usage of undeclared node.");
-                                                $$ = (AstNode *) newAstDefinitionNode($3,$1,INT_DECLARATION_TYPE);
+                                                $$ = (AstNode *) newAstDefinitionNode((AstNode *) newAstArithmeticExpressionNode((AstArithmeticExpressionNode *) $3, (AstArithmeticExpressionNode *) $5, $4, 0),$1,INT_DECLARATION_TYPE);
+                                                free($1);
+                                                free($4);
+                                            }
+                |
+                ID '=' term                 {
+                                                if(findSymbol(scopeTable,$1) == NULL){
+                                                    yyerror("Syntax Error: Usage of undeclared node.");
+                                                }
+                                                AstNode * node = $3;
+                                                if(node->type == NUMERIC_TYPE){
+                                                    $$ = (AstNode *) newAstDefinitionNode((AstNode *) newAstArithmeticExpressionNode((AstArithmeticExpressionNode *) NULL,(AstArithmeticExpressionNode *) NULL, (char *) NULL, $3),$1,INT_DECLARATION_TYPE);
+                                                }else{
+                                                    char * str = ((AstIdNode *)node)->name;
+                                                    $$ = (AstNode *) newAstDefinitionNode((AstNode *)newAstConstantExpressionNode(str),$1,STRING_DECLARATION_TYPE);
+                                                }
                                                 free($1);
                                             }
                 |
@@ -368,7 +383,13 @@ definition:     ID '=' exp                  {
                                                 free($1);
                                             }
 ;
-exp:            term                        {$$ = (AstNode *) newAstArithmeticExpressionNode((AstArithmeticExpressionNode *) NULL,(AstArithmeticExpressionNode *) NULL, (char *) NULL, $1);}
+exp:            term                        {
+                                                AstNode * node = $1;
+                                                if(!checkIsInteger(node)) {
+                                                        yyerror("Syntax Error: Invalid definition data type, expected int data type.");
+                                                }
+                                                $$ = (AstNode *) newAstArithmeticExpressionNode((AstArithmeticExpressionNode *) NULL,(AstArithmeticExpressionNode *) NULL, (char *) NULL, node);
+                                            }
                 |
                 exp OPERATOR exp            {$$ = (AstNode *) newAstArithmeticExpressionNode((AstArithmeticExpressionNode *) $1, (AstArithmeticExpressionNode *) $3, $2, 0);free($2);}
 ;
@@ -378,8 +399,6 @@ term:           NUMBER                      {$$ = (AstNode *)newAstNumericExpres
                                                 Symbol * symbol;
                                                 if((symbol=findSymbol(scopeTable,$1)) == NULL)
                                                     yyerror("Syntax Error: Usage of undeclared variable.");
-                                                if(symbol->dataType != INT_DECLARATION_TYPE) 
-                                                    yyerror("Syntax Error: Invalid definition data type, expected int data type.");
                                                 $$ = (AstNode *)newAstIdNode($1, symbol->dataType);
                                                 free($1);
                                             }
@@ -393,7 +412,13 @@ conditionalElse:
                 |
                                                                     {$$ = (AstNode *) NULL;}
 ;
-boolExp:        term                              {$$ = (AstNode *) newAstBooleanExpressionNode(NULL,NULL,NULL,$1);}
+boolExp:        term                              {
+                                                    AstNode * node = $1;
+                                                    if(!checkIsInteger(node)) {
+                                                        yyerror("Syntax Error: Invalid definition data type, expected int data type.");
+                                                    }
+                                                    $$ = (AstNode *) newAstBooleanExpressionNode(NULL,NULL,NULL,node);
+                                                    }
                 |
                 boolExp BINARY_BOOL_OPERATOR boolExp {$$ = (AstNode *) newAstBooleanExpressionNode((AstBooleanExpressionNode *)$1,(AstBooleanExpressionNode *)$3,$2,0);free($2);}
                 |
