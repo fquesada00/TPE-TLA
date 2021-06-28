@@ -2,35 +2,35 @@ graph(){
    int a = 1;
    int b = 0;
    if(b) {
-       output("no deberia entrar aca);
+       output("no deberia entrar aca\n");
    }
    else-if(a) {
-       output(aca si quiero entrar);
+       output("aca si quiero entrar\n");
    }
    a = 0;
    if(a) {
-       output("aca tampoco quiero entrar);
+       output("aca tampoco quiero entrar\n");
    }
    else-if(!a) {
-       output("anda el !");
+       output("anda el !\n");
    }
    a = 1;
    if (a && b) {
-       output("no anda el and");
+       output("no anda el and\n");
    }
    else-if(b || a) {
-       output("si anda el or");
+       output("si anda el or\n");
    }
 
    a = 7;
    if(a > 10) {
-       output("no anda el mayor");
+       output("no anda el mayor\n");
    }
    else-if(a > 8) {
        output("no anda el mayor");
    }
    else-if(a < 8) {
-       output("andan el menor y el else-if");
+       output("andan el menor y el else-if\n");
    }
 
 }

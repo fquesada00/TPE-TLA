@@ -1,0 +1,13 @@
+graph() {
+    string s = "hola";
+    string b = "chau";
+    output("s\n");
+    output(s);
+    output("\n");
+    output(b);
+    s = input();
+    output(s);
+    output("\n");
+    s = b;
+    output(s);
+}

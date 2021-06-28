@@ -26,7 +26,7 @@ typedef struct GraphNode
     struct GraphEdgeListElement *it;
     size_t size;
     char * value;
-    size_t id;
+    int id;
 } GraphNode;
 
 typedef struct Graph
@@ -101,14 +101,14 @@ GraphNode *newGraphNode(Graph *graph, char * value)
         size = sizeof(int);
         break;
     case STRING_EDGE:
-        size = sizeof(char) * strnlen((char *)value, STR_MAX_LEN);
+        size = sizeof(char) * strnlen((char *)value, STR_MAX_LEN) + 1;
         break;
     default:
         break;
     }
     e->type = type;
-    e->weight = malloc(size);
-    memcpy(e->weight, value, size);
+    e->weight = calloc(1, size);
+    memcpy(e->weight, value, size - 1);
     return e;
 }
 
@@ -263,6 +263,7 @@ void removeNode(Graph *graph, GraphNode *node)
         removeAdjacency(graph, n->value);
         graph->first = n->next;
         graph->size--;
+        free(n->value->value);
         freeEdges(n->value);
         free(n->value);
         free(n);
@@ -288,6 +289,7 @@ void removeNode(Graph *graph, GraphNode *node)
     prevN->next = n->next;
     graph->size--;
     freeEdges(n->value);
+    free(n->value->value);
     free(n->value);
     free(n);
     // printf("at %s\n", __func__);
@@ -428,7 +430,7 @@ void traverseDFSRecursive(Graph *graph, GraphNode *node, bool *visited, int *nod
 
 void traverseDFS(Graph *graph, GraphNode *node)
 {
-    printf("-----------    Traversing graph DFS for node ID %zu    -----------\n", node->id);
+    printf("-----------    Traversing graph DFS for node ID %d   -----------\n", node->id);
     bool visited[graph->size];
     for (int i = 0; i < graph->size; ++i)
         visited[i] = false;
@@ -467,7 +469,7 @@ void traverseBFSRecursive(Graph *graph, GraphNode *node, bool *visited, GraphNod
 
 void traverseBFS(Graph *graph, GraphNode *node)
 {
-    printf("-----------    Traversing graph BFS for node ID %zu    -----------\n", node->id);
+    printf("-----------    Traversing graph BFS for node ID %d    -----------\n", node->id);
     bool visited[graph->size];
     for (int i = 0; i < graph->size; ++i)
         visited[i] = false;

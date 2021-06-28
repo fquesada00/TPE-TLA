@@ -13,6 +13,7 @@ void translateMainBlockcode(AstBlockcodeNode *node)
     printf("GraphNode * nodeIterator = NULL;\n");
     printf("GraphEdge * edgeIterator = NULL;\n");
     translateAstCodeNode(node->code);
+    printf("freeGraph(graph);\n");
     printf("}");
 }
 
